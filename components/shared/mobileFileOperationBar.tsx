@@ -6,7 +6,7 @@ import {
   SheetContent,
   SheetTrigger,
 } from "@/components/ui/sheet"
-import { sidebarLinks } from "@/constants"
+import { FileOperations } from "@/constants"
 import { cn } from "@/lib/utils"
 import { useUser } from "@clerk/nextjs"
 import Image from "next/image"
@@ -14,7 +14,7 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 
 
-const MobileNav = () => {
+const MobileFileOperationBar = () => {
   const pathname = usePathname();
   const {user}=useUser()
 
@@ -32,7 +32,7 @@ const MobileNav = () => {
           <div className="flex h-[calc(100vh-72px)] flex-col justify-between overflow-y-auto">
             <SheetClose asChild>
               <nav className="flex h-full flex-col gap-6 text-white-1">
-              {sidebarLinks.map(({ route, label, imgURL }) => {
+              {FileOperations.map(({ route, label, imgURL }) => {
                 const isActive = pathname === route || pathname.startsWith(`${route}/`);
                 if(route==="/profile")route=`/profile/${user?.id}`
 
@@ -52,4 +52,4 @@ const MobileNav = () => {
   )
 }
 
-export default MobileNav
+export default MobileFileOperationBar

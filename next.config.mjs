@@ -12,6 +12,14 @@ const nextConfig = {
             },
             {
                 protocol: 'https',
+                hostname: 'google.oit.ncsu.edu'
+            },
+            {
+                protocol: 'https',
+                hostname: 'podcraftr.vercel.app'
+            },
+            {
+                protocol: 'https',
                 hostname: 'a.thumbs.redditmedia.com'
             },
             {

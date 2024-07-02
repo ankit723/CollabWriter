@@ -7,10 +7,10 @@ const userSchema = new mongoose.Schema({
   name: { type: String, required: true },
   username: { type: String, required: true },
   bio: { type: String, required: true },
-  podcasts:[
+  document:[
     {
       type:mongoose.Schema.Types.ObjectId,
-      ref:'Podcast'
+      ref:'Document'
     }
   ],
 });

@@ -1,12 +1,12 @@
 import AccountProfile from "@/components/forms/accountProfile";
 import { currentUser } from "@clerk/nextjs/server";
 import { fetchUser } from "@/lib/actions/user.action";
-import {redirect} from 'next/navigation'
+import { redirect } from "next/navigation";
 import Link from "next/link";
 
 async function Page(){
     const cUser =await currentUser()
-    if(!cUser)redirect('/sign-in')
+    if(!cUser)redirect('/')
 
     const userInfo = await fetchUser(cUser?.id||"")
     
@@ -26,7 +26,6 @@ async function Page(){
         <main className="flex flex-col glassmorphism-auth h-full justify-start px-10 lg:px-[30%] py-20">
             <h1 className=" head-text">Edit Profile</h1>
             <p className="mt-3 text-base-regular text-light-2">Edit your Profile According To Your needs</p>
-
             <section className="mt-9 bg-black-2 px-5 lg:px-10 py-10">
                 <AccountProfile user={userData} btnTitle={"Save & Continue"}/>
                 <div className="w-full flex justify-center items-center my-10">

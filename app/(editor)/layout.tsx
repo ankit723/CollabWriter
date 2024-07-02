@@ -1,6 +1,6 @@
-import LeftSideBar from "@/components/shared/leftSideBar";
+import FileOperationBar from "@/components/shared/fileOperationsBar";
 import Image from "next/image";
-import MobileNav from "@/components/shared/mobileNav";
+import MobileFileOperationBar from "@/components/shared/mobileFileOperationBar";
 
 export default function RootLayout({
   children,
@@ -10,10 +10,10 @@ export default function RootLayout({
   return (
     <div className="relative flex flex-col">
       <main className="relative flex bg-black-3">
-        <LeftSideBar />
+        <FileOperationBar />
         
-        <section className="flex min-h-screen flex-1 flex-col px-4 sm:px-14">
-          <div className="mx-auto flex w-full max-w-5xl flex-col max-sm:px-4">
+        <section className="flex min-h-screen flex-1 flex-col">
+          <div className="mx-auto flex w-full flex-col">
             <div className="flex h-16 items-center justify-between md:hidden">
               <Image 
                 src="/icons/logo.png"
@@ -21,10 +21,9 @@ export default function RootLayout({
                 height={30}
                 alt="menu icon"
               />
-              <MobileNav />
+              <MobileFileOperationBar />
             </div>
             <div className="flex flex-col md:pb-14">
-
               {children}
             </div>
           </div>
