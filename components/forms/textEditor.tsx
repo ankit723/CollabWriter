@@ -26,7 +26,7 @@ const TextEditor = ({id}:any) => {
   const [quill, setQuill]=useState<any>(null)
 
   useEffect(()=>{
-    const s=io('https://collab-writer-text-document-backend.vercel.app/')
+    const s=io('https://web-production-74bc.up.railway.app')
     setSocket(s)
 
     return ()=>{
