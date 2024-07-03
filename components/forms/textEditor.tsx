@@ -2,7 +2,6 @@
 import React, {useState, useEffect, useCallback, useRef} from 'react'
 import Quill from "quill"
 import "quill/dist/quill.snow.css"
-import "quill/dist/quill.bubble.css"
 import {io} from 'socket.io-client'
 
 const TOOLBAR_OPTIONS = [
@@ -26,7 +25,7 @@ const TextEditor = ({id}:any) => {
   const [quill, setQuill]=useState<any>(null)
 
   useEffect(()=>{
-    const s=io('https://web-production-74bc.up.railway.app')
+    const s=io(process.env.NEXT_PUBLIC_SOCKET_BACKEND_URL||"http://localhost:3001")
     setSocket(s)
 
     return ()=>{

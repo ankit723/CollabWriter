@@ -25,7 +25,7 @@ const Page = async () => {
 
         <div className="podcast_grid">
           <DocumentCard imgUrl={"/icons/add.png"} title={"Add new Document"} description={"Add a new blank Document"} docId={uuidv4()} type={"text"} isNew={true} userId={userInfo._id.toString()} />
-          {documents.map((document) => (
+          {documents.map((document:any) => (
             <DocumentCard key={document.id.toString()} imgUrl={"https://google.oit.ncsu.edu/wp-content/uploads/sites/6/2021/01/Google_Docs.max-2800x2800-1.png"} title={document.title} description={document.description} docId={document.id.toString()} type={"text"} isNew={false} userId={userInfo._id.toString()} />
           ))}
         </div>
