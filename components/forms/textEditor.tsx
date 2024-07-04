@@ -1,8 +1,7 @@
 'use client'
-import React, {useState, useEffect, useCallback, useRef} from 'react'
-import Quill from "quill"
-import "quill/dist/quill.snow.css"
-import {io} from 'socket.io-client'
+import React, { useState, useEffect, useCallback } from 'react';
+import Quill from 'quill';
+import 'quill/dist/quill.snow.css';
 
 const TOOLBAR_OPTIONS = [
   [{ header: [1, 2, 3, 4, 5, 6, false] }],
@@ -17,100 +16,105 @@ const TOOLBAR_OPTIONS = [
   [{ align: [] }],
   ['link', 'image', 'video'], // Add links, images, and videos
   ['blockquote', 'code-block'], // Blockquote and code block
-  ['clean'] // Remove formatting button
+  ['clean'], // Remove formatting button
 ];
-const TextEditor = ({id}:any) => {
 
-  const [socket, setSocket]=useState<any>(null)
-  const [quill, setQuill]=useState<any>(null)
+const TextEditor = ({ id }: { id: string }) => {
+  const [socket, setSocket] = useState<WebSocket | null>(null);
+  const [quill, setQuill] = useState<Quill | null>(null);
 
-  useEffect(()=>{
-    const s=io(process.env.NEXT_PUBLIC_SOCKET_BACKEND_URL||"http://localhost:3001")
-    setSocket(s)
+  useEffect(() => {
+    const ws = new WebSocket(process.env.NEXT_PUBLIC_SOCKET_BACKEND_URL||'ws://localhost:3001');
+    setSocket(ws);
 
-    return ()=>{
-      s.disconnect()
-    }
-  }, [])
-  
-  useEffect(()=>{
-    if(socket==null || quill==null) return;
-    socket.once('load-document', (document:any)=>{
-      quill.setContents(document)
-      quill.enable()
-    })
-    socket.emit('get-document', id)
+    return () => {
+      ws.close();
+    };
+  }, []);
 
-  }, [socket, quill, id])
-  
-  useEffect(()=>{
-    if(socket==null || quill==null) return;
-    const handler=(delta:any, oldDelta:any, source:any) => {
-      if(source!=='user')return
-      socket.emit("send-changes", delta)
-    }
+  useEffect(() => {
+    if (!socket || !quill) return;
+
+    socket.onopen = () => {
+      console.log('WebSocket open, requesting document');
+      socket.send(JSON.stringify({ type: 'get-document', id: id }));
+    };
+
+    socket.onmessage = (event) => {
+      const message = JSON.parse(event.data);
+      console.log('Received message:', message);
+      if (message.type === 'load-document') {
+        quill.setContents(message.data);
+        quill.enable();
+      } else if (message.type === 'receive-changes') {
+        quill.updateContents(message.delta);
+      }
+    };
+
+    return () => {
+      socket.onmessage = null;
+      socket.onopen = null;
+    };
+  }, [socket, quill, id]);
+
+  useEffect(() => {
+    if (!socket || !quill) return;
+
+    const handler = (delta: any, oldDelta: any, source: any) => {
+      if (source !== 'user') return;
+      socket.send(JSON.stringify({ type: 'send-changes', delta }));
+    };
+
     quill.on('text-change', handler);
 
-    return ()=>{
-      quill.off('text-change', handler)
-    }
-  }, [socket, quill])
+    return () => {
+      quill.off('text-change', handler);
+    };
+  }, [socket, quill]);
 
+  useEffect(() => {
+    if (!socket || !quill) return;
 
-  useEffect(()=>{
-    if(socket==null || quill==null) return;
-    
-    const interval=setInterval(()=>{
-      socket.emit('save-document', quill.getContents())
-    }, 1000)
+    const interval = setInterval(() => {
+      socket.send(JSON.stringify({ type: 'save-document', data: quill.getContents(), id: id }));
+    }, 1000);
 
-    return()=>{
-      clearInterval(interval)
-    }
-  }, [socket, quill])
-  
+    return () => {
+      clearInterval(interval);
+    };
+  }, [socket, quill, id]);
 
-  useEffect(()=>{
-    if(socket==null || quill==null) return;
-    const handler=(delta:any) => {
-      quill.updateContents(delta)
-    }
-    socket.on('recieve-changes', handler);
+  const wrapperRef = useCallback((wrapper: any) => {
+    if (!wrapper) return;
 
-    return ()=>{
-      socket.off('recieve-changes', handler)
-    }
-  }, [socket, quill])
-
-  const wrapperRef=useCallback((wrapper:any)=>{
-    if(wrapper==null) return;
-
-    wrapper.innerHTML=""
-    const editor=document.createElement('div')
+    wrapper.innerHTML = '';
+    const editor = document.createElement('div');
     wrapper.append(editor);
-    const q=new Quill(editor, {
-      theme:"snow", 
+
+    const q = new Quill(editor, {
+      theme: 'snow',
       modules: {
         toolbar: TOOLBAR_OPTIONS,
       },
-    })
-    q.disable()
-    q.setText("Loading...")
-    setQuill(q)
+    });
+
+    q.disable();
+    q.setText('Loading...');
+    setQuill(q);
+
     const toolbar = wrapper.querySelector('.ql-toolbar');
     if (toolbar) {
       toolbar.style.color = '#fff'; // Set your desired text color
     }
-  }, [])
-
+  }, []);
 
   return (
-    <div className='flex flex-col gap-9'>
-      <section className='flex flex-col gap-5'>
+    <div className="flex flex-col gap-9">
+      <section className="flex flex-col gap-5">
         <div className="editor-container" ref={wrapperRef}></div>
       </section>
     </div>
-  )
-}
+  );
+};
 
-export default TextEditor
+export default TextEditor;
