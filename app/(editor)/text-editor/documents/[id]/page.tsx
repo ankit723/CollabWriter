@@ -3,6 +3,7 @@ import { currentUser } from '@clerk/nextjs/server';
 import { fetchUser } from '@/lib/actions/user.action';
 import { redirect } from 'next/navigation';
 import React from 'react'
+import { fetchDocument } from '@/lib/actions/document.action';
 
 const Page = async({params}:{params:{id:string}}) => {
   const user = await currentUser();
@@ -15,9 +16,11 @@ const Page = async({params}:{params:{id:string}}) => {
     redirect('/onboarding');
   }
 
+  const documentInfo=await fetchDocument(params.id, userInfo._id)
+
   return (
     <div>
-      <TextEditor id={params.id} />
+      <TextEditor id={params.id} userData={userInfo} documentData={documentInfo}/>
     </div>
   )
 }

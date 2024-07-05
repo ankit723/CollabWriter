@@ -2,6 +2,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import Quill from 'quill';
 import 'quill/dist/quill.snow.css';
+import { useUser } from '@clerk/nextjs';
+import TextDocProperty from '../shared/textDocProperty';
 
 const TOOLBAR_OPTIONS = [
   [{ header: [1, 2, 3, 4, 5, 6, false] }],
@@ -19,9 +21,19 @@ const TOOLBAR_OPTIONS = [
   ['clean'], // Remove formatting button
 ];
 
-const TextEditor = ({ id }: { id: string }) => {
+const TextEditor = ({ id, userData, documentData }: { id: string, userData:any, documentData:any }) => {
   const [socket, setSocket] = useState<WebSocket | null>(null);
   const [quill, setQuill] = useState<Quill | null>(null);
+  console.log(userData)
+  console.log(documentData)
+
+  if(userData._id!=documentData.userId && !documentData.allowedUsers.includes(userData.email) && documentData.isPublic===false){
+    return(
+      <div className="w-full h-[90vh] text-red-400 font-extrabold text-heading3-bold flex justify-center items-center text-center">
+        You have no access to this document or it is not publicly available! Please contact the owner!
+      </div>
+    )
+  }
 
   useEffect(() => {
     const ws = new WebSocket(process.env.NEXT_PUBLIC_SOCKET_BACKEND_URL||'ws://localhost:5001');
@@ -110,8 +122,10 @@ const TextEditor = ({ id }: { id: string }) => {
 
   return (
     <div className="flex flex-col gap-9">
+      <TextDocProperty doc_id={documentData.id}/>
       <section className="flex flex-col gap-5">
         <div className="editor-container" ref={wrapperRef}></div>
+
       </section>
     </div>
   );

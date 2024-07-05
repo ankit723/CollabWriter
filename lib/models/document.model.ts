@@ -10,6 +10,15 @@ const documentSchema = new mongoose.Schema({
         type:mongoose.Schema.Types.ObjectId,
         ref:"User"
     },
+    allowedUsers:[
+        {
+            type:String
+        }
+    ],
+    isPublic:{
+        type:Boolean,
+        default:false
+    },
     type:String
 });
 

@@ -25,10 +25,29 @@ export async function fetchDocument(doc_id: string, userId:string) {
     let doc= await Document.findOne({id:doc_id})
     if(doc) return doc;
 
-    doc= await Document.create({id:doc_id, data:"", userId, type:"text", imgUrl:"", title:"New Document", description:"This is a new document"})
+    const currentDate=new Date()
+    doc= await Document.create({id:doc_id, data:"", userId, type:"text", imgUrl:"", title:`New Document ${currentDate}-${userId}`, description:"This is a new document"})
     await User.findByIdAndUpdate(userId, {$push:{document:doc._id}})
   } catch (error: any) {
     throw new Error(`Failed to fetch user: ${error.message}`);
   }
 }
 
+export async function updateDocumentPermission(doc_id: string, accessEmail: any, isPublic: boolean) {
+  try {
+    console.log(accessEmail)
+    await connectToDB(); // Ensure the database connection is established
+    const doc = await Document.findOneAndUpdate(
+      { id: doc_id },
+      { $push: { allowedUsers: { $each: accessEmail } }, isPublic },
+      { new: true }
+    );
+    if (doc) {
+      return doc;
+    } else {
+      throw new Error("Document not found");
+    }
+  } catch (error: any) {
+    throw new Error(`Failed to update document: ${error.message}`);
+  }
+}
