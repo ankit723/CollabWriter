@@ -24,15 +24,6 @@ const TextEditor = ({ id, userData, documentData }: { id: string, userData:any, 
   const [socket, setSocket] = useState<WebSocket | null>(null);
   const [quill, setQuill] = useState<Quill | null>(null);
 
-  // Check access condition
-  if (userData._id !== documentData.userId && !documentData.allowedUsers.includes(userData.email) && !documentData.isPublic) {
-    return (
-      <div className="w-full h-[90vh] text-red-400 font-extrabold text-heading3-bold flex justify-center items-center text-center">
-        You have no access to this document or it is not publicly available! Please contact the owner!
-      </div>
-    );
-  }
-
   useEffect(() => {
     const ws = new WebSocket(process.env.NEXT_PUBLIC_SOCKET_BACKEND_URL || 'ws://localhost:5001');
     setSocket(ws);
@@ -117,6 +108,14 @@ const TextEditor = ({ id, userData, documentData }: { id: string, userData:any, 
       toolbar.style.color = '#fff'; // Set your desired text color
     }
   }, []);
+
+  if (userData._id !== documentData.userId && !documentData.allowedUsers.includes(userData.email) && !documentData.isPublic) {
+    return (
+      <div className="w-full h-[90vh] text-red-400 font-extrabold text-heading3-bold flex justify-center items-center text-center">
+        You have no access to this document or it is not publicly available! Please contact the owner!
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-9">
