@@ -24,7 +24,7 @@ const TextEditor = ({ id }: { id: string }) => {
   const [quill, setQuill] = useState<Quill | null>(null);
 
   useEffect(() => {
-    const ws = new WebSocket(process.env.NEXT_PUBLIC_SOCKET_BACKEND_URL||'ws://localhost:3001');
+    const ws = new WebSocket(process.env.NEXT_PUBLIC_SOCKET_BACKEND_URL||'ws://localhost:5001');
     setSocket(ws);
 
     return () => {
