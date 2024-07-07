@@ -2,15 +2,16 @@
 import Image from 'next/image'
 import React, {useState, useEffect} from 'react'
 import { Input } from '../ui/input'
-import { updateDocumentPermission } from '@/lib/actions/document.action'
+import { fetchDocument, updateDocumentPermission } from '@/lib/actions/document.action'
 import { Label } from '../ui/label'
 
-const TextDocProperty = ({doc_id}:any) => {
+const TextDocProperty = ({doc_id, accessEmailsProp, isPublicProp}:any) => {
   const [openHandleModal, setOpenHandleModal]=useState<boolean>(false)
   const [handleOpenOptionModal, setHandleOpenOptionModal]=useState<boolean>(false)
-  const [isPublic, setIsPublic]=useState<boolean>(false)
+  const [isPublic, setIsPublic]=useState<boolean>(isPublicProp)
   const [input, setInput]=useState<string>("")
-  const [accessEmails, setAccessEmails]=useState<string[]>([])
+  const [accessEmails, setAccessEmails]=useState<string[]>(accessEmailsProp)
+
 
   const handleInput=(e:any)=>{
     console.log(input)
@@ -38,7 +39,7 @@ const TextDocProperty = ({doc_id}:any) => {
 
   return (
     <div className="absolute">
-      <div className='fixed top-2 right-10 z-10 hover:bg-white-3 cursor-pointer p-3 rounded-full' onClick={()=>setOpenHandleModal(!openHandleModal)}>
+      <div className='fixed top-8 right-10 z-10 hover:bg-white-3 cursor-pointer p-3 rounded-full' onClick={()=>setOpenHandleModal(!openHandleModal)}>
         <Image src={'/icons/three-dots.svg'} alt='three dots' width={24} height={24}/>
       </div>
 

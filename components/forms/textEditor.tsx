@@ -3,6 +3,9 @@ import React, { useState, useEffect, useCallback } from 'react';
 import Quill from 'quill';
 import 'quill/dist/quill.snow.css';
 import TextDocProperty from '../shared/textDocProperty';
+import { Input } from '../ui/input';
+import { updateDocumentTitleDescription } from '@/lib/actions/document.action';
+import TopNavbar from '../shared/topNavbar';
 
 const TOOLBAR_OPTIONS = [
   [{ header: [1, 2, 3, 4, 5, 6, false] }],
@@ -23,6 +26,8 @@ const TOOLBAR_OPTIONS = [
 const TextEditor = ({ id, userData, documentData }: { id: string, userData:any, documentData:any }) => {
   const [socket, setSocket] = useState<WebSocket | null>(null);
   const [quill, setQuill] = useState<Quill | null>(null);
+  const [docName, setDocName] = useState<string>(documentData.title);
+  const [docDesc, setDocDesc] = useState<string>(documentData.description);
 
   useEffect(() => {
     const ws = new WebSocket(process.env.NEXT_PUBLIC_SOCKET_BACKEND_URL || 'ws://localhost:5001');
@@ -109,6 +114,16 @@ const TextEditor = ({ id, userData, documentData }: { id: string, userData:any, 
     }
   }, []);
 
+  const handleTitleChange=async(e:any)=>{
+    setDocName(e.target.value)
+    await updateDocumentTitleDescription(documentData.id, docName, docDesc)
+  }
+
+  const handleDescChange=async(e:any)=>{
+    setDocDesc(e.target.value)
+    await updateDocumentTitleDescription(documentData.id, docName, docDesc)
+  }
+
   if (userData._id !== documentData.userId && !documentData.allowedUsers.includes(userData.email) && !documentData.isPublic) {
     return (
       <div className="w-full h-[90vh] text-red-400 font-extrabold text-heading3-bold flex justify-center items-center text-center">
@@ -118,8 +133,12 @@ const TextEditor = ({ id, userData, documentData }: { id: string, userData:any, 
   }
 
   return (
-    <div className="flex flex-col gap-9">
-      <TextDocProperty doc_id={documentData.id} />
+    <div className="flex flex-col">
+      <div className="text-white-1 flex items-center w-full">
+        <input type='text' className='bg-transparent px-3 w-1/2' value={docName} onChange={(e)=>handleTitleChange(e)}/>
+        <input type='text' className='w-full bg-transparent px-3' value={docDesc} onChange={(e)=>handleDescChange(e)}/>
+        <TextDocProperty doc_id={documentData.id} accessEmailsProp={documentData.allowedUsers} isPublicProp={documentData.isPublic}/>
+      </div>
       <section className="flex flex-col gap-5">
         <div className="editor-container" ref={wrapperRef}></div>
       </section>

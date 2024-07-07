@@ -33,9 +33,4 @@ export const FileOperations = [
     route: "/code-editor",
     label: "All Code Files",
   },
-  {
-    imgURL: "/icons/discover.svg",
-    route: "",
-    label: "Save",
-  },
 ];

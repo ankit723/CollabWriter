@@ -19,7 +19,7 @@ export async function fetchDocumentsByUserId(userId: string, type:string) {
     }
   }
 
-export async function fetchDocument(doc_id: string, userId:string) {
+export async function fetchDocument(doc_id: string, userId:string="") {
   try {
     connectToDB();
     let doc= await Document.findOne({id:doc_id})
@@ -39,14 +39,34 @@ export async function updateDocumentPermission(doc_id: string, accessEmail: any,
     await connectToDB(); // Ensure the database connection is established
     const doc = await Document.findOneAndUpdate(
       { id: doc_id },
-      { $push: { allowedUsers: { $each: accessEmail } }, isPublic },
+      {allowedUsers:accessEmail},
       { new: true }
     );
-    if (doc) {
-      return doc;
-    } else {
+    if(!doc){
       throw new Error("Document not found");
     }
+  } catch (error: any) {
+    throw new Error(`Failed to update document: ${error.message}`);
+  }
+}
+
+export async function updateDocumentTitleDescription(doc_id: string, title: string, description: string) {
+  try {
+    await connectToDB(); // Ensure the database connection is established
+    await Document.findOneAndUpdate(
+      { id: doc_id },
+      {title, description},
+      { new: true }
+    );
+  } catch (error: any) {
+    throw new Error(`Failed to update document: ${error.message}`);
+  }
+}
+
+export async function deleteDocument(doc_id: string) {
+  try {
+    await connectToDB(); // Ensure the database connection is established
+    await Document.findOneAndDelete({id:doc_id});
   } catch (error: any) {
     throw new Error(`Failed to update document: ${error.message}`);
   }
