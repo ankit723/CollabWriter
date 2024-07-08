@@ -6,6 +6,7 @@ import TextDocProperty from '../shared/textDocProperty';
 import { Input } from '../ui/input';
 import { updateDocumentTitleDescription } from '@/lib/actions/document.action';
 import TopNavbar from '../shared/topNavbar';
+import TopTextEditorNavbar from '../shared/topTextEditorNavbar';
 
 const TOOLBAR_OPTIONS = [
   [{ header: [1, 2, 3, 4, 5, 6, false] }],
@@ -134,11 +135,7 @@ const TextEditor = ({ id, userData, documentData }: { id: string, userData:any, 
 
   return (
     <div className="flex flex-col">
-      <div className="text-white-1 flex items-center w-full">
-        <input type='text' className='bg-transparent px-3 w-1/2' value={docName} onChange={(e)=>handleTitleChange(e)}/>
-        <input type='text' className='w-full bg-transparent px-3' value={docDesc} onChange={(e)=>handleDescChange(e)}/>
-        <TextDocProperty doc_id={documentData.id} accessEmailsProp={documentData.allowedUsers} isPublicProp={documentData.isPublic}/>
-      </div>
+      <TopTextEditorNavbar docName={docName} docDesc={docDesc} handleDescChange={handleDescChange} handleTitleChange={handleTitleChange} id={documentData.id} allowedUsers={documentData.allowedUsers}isPublic={documentData.isPublic} userData={userData}/>
       <section className="flex flex-col gap-5">
         <div className="editor-container" ref={wrapperRef}></div>
       </section>

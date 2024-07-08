@@ -31,16 +31,20 @@ const TextDocProperty = ({doc_id, accessEmailsProp, isPublicProp}:any) => {
     
     if(isPublic){
       await updateDocumentPermission(doc_id, [""], isPublic)
+      alert("You have made the file public succesfully !")
+      window.location.reload()
     }else{
       await updateDocumentPermission(doc_id, accessEmails, isPublic)
+      alert("The Permission related to the file has been changes successfully !")
+      window.location.reload()
     }
   };
   
 
   return (
-    <div className="absolute">
-      <div className='fixed top-8 right-10 z-10 hover:bg-white-3 cursor-pointer p-3 rounded-full' onClick={()=>setOpenHandleModal(!openHandleModal)}>
-        <Image src={'/icons/three-dots.svg'} alt='three dots' width={24} height={24}/>
+    <div className="">
+      <div className=' z-10 hover:bg-white-3 cursor-pointer p-2 rounded-full' onClick={()=>setOpenHandleModal(!openHandleModal)}>
+        <Image src={'/icons/three-dots.svg'} alt='three dots' width={22} height={22}/>
       </div>
 
       {openHandleModal&&(
