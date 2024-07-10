@@ -17,7 +17,7 @@ const FileTreeNode = ({ fileName, nodes, onSelect, path }: any) => {
         <div className='' style={{ marginLeft: '17px'}} >
             {isFolder ? (
                 <div style={{borderLeft:"0.1px solid #7e7e7e"}}>
-                    <span className='text-white-2 font-thin text-small-regular' onClick={toggleExpansion} style={{ cursor: 'pointer'}}>
+                    <span className='text-white-2 hover:text-blue font-thin text-small-regular' onClick={toggleExpansion} style={{ cursor: 'pointer'}}>
                         <span className='pr-2' style={{fontSize:"10px"}}>{isExpanded ? '▼ 📂' : '▶ 📁'}</span>{fileName}
                     </span>
                     {isExpanded && (
@@ -31,9 +31,9 @@ const FileTreeNode = ({ fileName, nodes, onSelect, path }: any) => {
                     )}
                 </div>
             ) : (
-                <span className='cursor-pointer font-thin text-small-regular' onClick={(e)=>{
+                <span className='cursor-pointer font-thin text-small-regular hover:text-blue' onClick={(e)=>{
                     onSelect(path)
-                }}> <span className='pr-2' style={{fontSize:"10px"}}>📄</span> {fileName}</span>
+                }}> <span className='pr-2 ' style={{fontSize:"10px"}}>📄</span> {fileName}</span>
             )}
         </div>
     );

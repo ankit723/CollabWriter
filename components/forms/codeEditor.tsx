@@ -1,5 +1,5 @@
 'use client'
-import {useState, useEffect} from 'react'
+import {useState, useEffect, useCallback} from 'react'
 import AceEditor from "react-ace";
 
 import "ace-builds/src-noconflict/mode-javascript";
@@ -14,21 +14,55 @@ const ws = new WebSocket(process.env.NEXT_PUBLIC_SOCKET_BACKEND_URL || 'ws://loc
 
 const CodeEditor = ({path}:any) => {
     const [code, setCode]=useState<any>("")
+    const [selectedPathContent, setSelectedPathContent]=useState<any>("")
+    const isSaved=selectedPathContent===code
 
     useEffect(()=>{
-        if(code){
+        if(code && !isSaved){
             const timer=setTimeout(()=>{
                 console.log(code)
                 ws.send(JSON.stringify({ type: 'file:change', data: {
                     path:path,
                     content:code
                 } }));
-            }, 5*1000)
+            }, 5)
             return()=>{
                 clearTimeout(timer)
             }
         }
     }, [code])
+
+    const getFileContents=useCallback(async()=>{
+        if(!path)return;
+        const response=await fetch(`http://localhost:5001/files/content?path=${path}`)
+        const result=await response.json()
+        setSelectedPathContent(result.content)
+    }, [path])
+
+    useEffect(()=>{
+        if(path && selectedPathContent){
+            setCode(selectedPathContent)
+        }
+    }, [path, selectedPathContent])
+
+    useEffect(()=>{
+        setCode("")
+    }, [path])
+
+    useEffect(()=>{
+        if(path) getFileContents()
+    }, [getFileContents, path])
+
+    useEffect(()=>{
+        ws.onmessage=async(event)=>{
+            const message=JSON.parse(event.data)
+            if(message.type==='file:refresh'){
+                console.log('Changed')
+                if(path) getFileContents()
+            }
+        }
+    }, [getFileContents, path])
+
     return (
         <div>
         <AceEditor
