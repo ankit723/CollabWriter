@@ -1,5 +1,5 @@
 'use client'
-import { fetchDocument } from '@/lib/actions/document.action'
+import { fetchDocument, fetchProject } from '@/lib/actions/document.action'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import React, { useEffect } from 'react'
@@ -11,7 +11,11 @@ const DocumentCard = ({imgUrl, title, description, docId, type, isNew, userId, a
   const handleClick=async()=>{
     //increase views
     if(isNew){
-      await fetchDocument(docId, userId)
+      if(type==="text"){
+        await fetchDocument(docId, userId)
+      }else{
+        await fetchProject(docId, userId)
+      }
       router.push(`/${type==="text"?"text-editor/documents":"code-editor/codes"}/${docId}`)
     }
     router.push(`/${type==="text"?"text-editor/documents":"code-editor/codes"}/${docId}`)

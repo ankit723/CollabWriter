@@ -7,12 +7,12 @@ export const sidebarLinks = [
     {
       imgURL: "/icons/headphone.svg",
       route: "/text-editor",
-      label: "Edit Text",
+      label: "Documents",
     },
     {
       imgURL: "/icons/profile.svg",
       route: "/code-editor",
-      label: "Edit Code",
+      label: "Projects",
     },
 ];
 

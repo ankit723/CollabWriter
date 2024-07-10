@@ -13,6 +13,12 @@ const userSchema = new mongoose.Schema({
       ref:'Document'
     }
   ],
+  projects:[
+    {
+      type:mongoose.Schema.Types.ObjectId,
+      ref:'Document'
+    }
+  ],
 });
 
 const User = mongoose.models.User || mongoose.model('User', userSchema);

@@ -33,6 +33,20 @@ export async function fetchDocument(doc_id: string, userId:string="") {
   }
 }
 
+export async function fetchProject(project_id: string, userId:string="") {
+  try {
+    connectToDB();
+    let project= await Document.findOne({id:project_id})
+    if(project) return project;
+
+    const currentDate=new Date()
+    project= await Document.create({id:project_id, data:"", userId, type:"code", imgUrl:"", title:`New Project ${currentDate}-${userId}`, description:"This is a new Project"})
+    await User.findByIdAndUpdate(userId, {$push:{projects:project._id}})
+  } catch (error: any) {
+    throw new Error(`Failed to fetch user: ${error.message}`);
+  }
+}
+
 export async function updateDocumentPermission(doc_id: string, accessEmail: any, isPublic: boolean) {
   try {
     console.log(accessEmail)
