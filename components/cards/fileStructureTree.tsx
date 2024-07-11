@@ -40,7 +40,7 @@ const FileTreeNode = ({ fileName, nodes, onSelect, path }: any) => {
 };
 
 
-const FileStructureTree = ({onSelect}:any) => {
+const FileStructureTree = ({onSelect, pId}:any) => {
     const[tree, setTree]=useState<any>(null)
 
     useEffect(()=>{
@@ -67,7 +67,7 @@ const FileStructureTree = ({onSelect}:any) => {
         <div>
             <FileTreeNode 
                 fileName={'/'}
-                nodes={tree?.tree}
+                nodes={tree?.tree[pId]}
                 onSelect={onSelect}
                 path={""}
             />

@@ -2,7 +2,6 @@
 import React, { useEffect, useRef } from 'react'
 import {Terminal as XTerminal} from '@xterm/xterm'
 import '@xterm/xterm/css/xterm.css'
-import {io} from 'socket.io-client'
 
 const ws = new WebSocket(process.env.NEXT_PUBLIC_SOCKET_BACKEND_URL || 'ws://localhost:5001');
 

@@ -12,7 +12,7 @@ import "ace-builds/src-noconflict/theme-cloud9_night";
 const ws = new WebSocket(process.env.NEXT_PUBLIC_SOCKET_BACKEND_URL || 'ws://localhost:5001');
 
 
-const CodeEditor = ({path}:any) => {
+const CodeEditor = ({path, pId}:any) => {
     const [code, setCode]=useState<any>("")
     const [selectedPathContent, setSelectedPathContent]=useState<any>("")
     const isSaved=selectedPathContent===code
@@ -23,6 +23,7 @@ const CodeEditor = ({path}:any) => {
                 console.log(code)
                 ws.send(JSON.stringify({ type: 'file:change', data: {
                     path:path,
+                    pId:pId,
                     content:code
                 } }));
             }, 5)
@@ -34,7 +35,7 @@ const CodeEditor = ({path}:any) => {
 
     const getFileContents=useCallback(async()=>{
         if(!path)return;
-        const response=await fetch(`http://localhost:5001/files/content?path=${path}`)
+        const response=await fetch(`http://localhost:5001/files/content?path=${path}&pId=${pId}`)
         const result=await response.json()
         setSelectedPathContent(result.content)
     }, [path])
@@ -64,10 +65,10 @@ const CodeEditor = ({path}:any) => {
     }, [getFileContents, path])
 
     return (
-        <div>
+        <div style={{ height: '100%' }}>
         <AceEditor
             width='100%'
-            height='72vh'
+            height='100%'
             mode="javascript"
             theme="cloud9_night"
             value={code}
