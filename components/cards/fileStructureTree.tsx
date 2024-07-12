@@ -1,17 +1,43 @@
 'use client'
 import {useEffect, useState} from 'react'
-import {io} from 'socket.io-client'
+
 
 const ws = new WebSocket(process.env.NEXT_PUBLIC_SOCKET_BACKEND_URL || 'ws://localhost:5001');
 
-const FileTreeNode = ({ fileName, nodes, onSelect, path }: any) => {
+const FileTreeNode = ({ fileName, nodes, onSelect, path, searchSelectedPath, setSearchResult, searchResult}: any) => {
     const [isExpanded, setIsExpanded] = useState(false);
+    const isFolder = nodes !== null;
+
+    useEffect(()=>{
+        if(searchSelectedPath===""){
+            setSearchResult([])
+        }
+        if(searchSelectedPath!==""){
+            setIsExpanded(true)
+        }
+        if(path.includes(searchSelectedPath) && !isFolder){
+            if (!searchResult.includes(path)) {
+                setSearchResult([...searchResult, path])
+            }
+            if(searchSelectedPath === ""){
+                setSearchResult([])
+            }
+        }
+        
+        return () => {
+            if (searchSelectedPath === "") {
+              setIsExpanded(false);
+            }
+        };
+
+    }, [searchSelectedPath])
 
     const toggleExpansion = () => {
         setIsExpanded(!isExpanded);
     };
 
-    const isFolder = nodes !== null;
+    
+
 
     return (
         <div className='' style={{ marginLeft: '17px'}} >
@@ -24,23 +50,25 @@ const FileTreeNode = ({ fileName, nodes, onSelect, path }: any) => {
                         <ul style={{ listStyleType: 'none'}}>
                             {Object.keys(nodes).map((child) => (
                                 <li key={child} style={{lineHeight:"20px"}}>
-                                    <FileTreeNode fileName={child} nodes={nodes[child]} onSelect={onSelect} path={path+'/'+child}/>
+                                    <FileTreeNode fileName={child} nodes={nodes[child]} onSelect={onSelect} path={path+'/'+child} searchSelectedPath={searchSelectedPath} setSearchResult={setSearchResult} searchResult={searchResult}/>
                                 </li>
                             ))}
                         </ul>
                     )}
                 </div>
             ) : (
-                <span className='cursor-pointer font-thin text-small-regular hover:text-blue' onClick={(e)=>{
-                    onSelect(path)
-                }}> <span className='pr-2 ' style={{fontSize:"10px"}}>📄</span> {fileName}</span>
+                <div className="">
+                    <span className='cursor-pointer font-thin text-small-regular hover:text-blue' onClick={(e)=>{
+                        onSelect(path)
+                    }}> <span className='pr-2 ' style={{fontSize:"10px"}}>📄</span> {fileName}</span>
+                </div>
             )}
         </div>
     );
 };
 
 
-const FileStructureTree = ({onSelect, pId}:any) => {
+const FileStructureTree = ({onSelect, pId, searchSelectedPath, setSearchResult, searchResult}:any) => {
     const[tree, setTree]=useState<any>(null)
 
     useEffect(()=>{
@@ -70,6 +98,9 @@ const FileStructureTree = ({onSelect, pId}:any) => {
                 nodes={tree?.tree[pId]}
                 onSelect={onSelect}
                 path={""}
+                searchSelectedPath={searchSelectedPath}
+                setSearchResult={setSearchResult}
+                searchResult={searchResult}
             />
         </div>
     )

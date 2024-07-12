@@ -120,7 +120,7 @@ const TextEditor = ({ id, userData, documentData }: { id: string, userData:any, 
     await updateDocumentTitleDescription(documentData.id, docName, docDesc)
   }
 
-  const handleDescChange=async(e:any)=>{
+  const     handleDescChange=async(e:any)=>{
     setDocDesc(e.target.value)
     await updateDocumentTitleDescription(documentData.id, docName, docDesc)
   }

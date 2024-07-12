@@ -13,6 +13,9 @@ const Terminal = () => {
         if(isRendered.current) return
         isRendered.current=true;
         const term=new XTerminal({
+            theme:{
+                background:"rgb(16 17 20 )",
+            },
             rows:14,
             cols:88,
             fontFamily: 'Courier New',
