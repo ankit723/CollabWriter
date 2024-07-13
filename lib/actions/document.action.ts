@@ -37,16 +37,19 @@ export async function fetchProject(project_id: string, userId:string="") {
   try {
     connectToDB();
     let project= await Document.findOne({id:project_id})
-    if(project) return project.id;
+    // if(project) return {id:project.id};
+    if(project) return {id:project.id,title:project.title,desc:project.description};
 
     const currentDate=new Date()
     project= await Document.create({id:project_id, data:"", userId, type:"code", imgUrl:"", title:`New Project ${currentDate}-${userId}`, description:"This is a new Project"})
     await User.findByIdAndUpdate(userId, {$push:{projects:project._id}})
-    return project.id
+    // return project.id
+    return {id:project.id,title:project.id,desc:project.description}
   } catch (error: any) {
     throw new Error(`Failed to fetch user: ${error.message}`);
   }
 }
+
 
 export async function updateDocumentPermission(doc_id: string, accessEmail: any, isPublic: boolean) {
   try {
@@ -70,6 +73,19 @@ export async function updateDocumentTitleDescription(doc_id: string, title: stri
     await connectToDB(); // Ensure the database connection is established
     await Document.findOneAndUpdate(
       { id: doc_id },
+      {title, description},
+      { new: true }
+    );
+  } catch (error: any) {
+    throw new Error(`Failed to update document: ${error.message}`);
+  }
+}
+
+export async function updateProjectTitleDescription(project_id: string, title: string, description: string) {
+  try {
+    await connectToDB(); 
+    await Document.findOneAndUpdate(
+      { id: project_id },
       {title, description},
       { new: true }
     );
