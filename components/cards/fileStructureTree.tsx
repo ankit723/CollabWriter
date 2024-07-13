@@ -92,11 +92,11 @@ const FileTreeNode = ({ fileName, nodes, onSelect, path, searchSelectedPath, set
                 </div>
             )}
 
-            <div className='text-black-1' style={{ ...menuStyle, position: 'fixed', backgroundColor: 'white', border: '1px solid black', zIndex: 1000 }}>
-                <div className='text-black-1 hover:bg-black-3' style={{ padding: '10px', cursor: 'pointer' }} onClick={() => handleMenuClick('download', path)}>Download</div>
-                <div className='text-black-1 hover:bg-black-3' style={{ padding: '10px', cursor: 'pointer' }} onClick={() => handleMenuClick('rename', path)}>Rename</div>
-                <div className='text-black-1 hover:bg-black-3' style={{ padding: '10px', cursor: 'pointer' }} onClick={() => handleMenuClick('delete', path)}>Delete</div>
-                <div className='text-black-1 hover:bg-black-3' style={{ padding: '10px', cursor: 'pointer' }} onClick={() => handleMenuClick('openInEditor', path)}>Open in Editor</div>
+            <div style={{ ...menuStyle, position: 'fixed', backgroundColor: 'white', border: '1px solid black', zIndex: 1000 }}>
+                <div style={{ padding: '10px', cursor: 'pointer' }} onClick={() => handleMenuClick('download', path)}>Download</div>
+                <div style={{ padding: '10px', cursor: 'pointer' }} onClick={() => handleMenuClick('rename', path)}>Rename</div>
+                <div style={{ padding: '10px', cursor: 'pointer' }} onClick={() => handleMenuClick('delete', path)}>Delete</div>
+                <div style={{ padding: '10px', cursor: 'pointer' }} onClick={() => handleMenuClick('openInEditor', path)}>Open in Editor</div>
             </div>
         </div>
     );

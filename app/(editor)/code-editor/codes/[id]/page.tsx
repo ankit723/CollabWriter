@@ -12,6 +12,7 @@ import { Replace } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 const ws = new WebSocket(
   process.env.NEXT_PUBLIC_SOCKET_BACKEND_URL || "ws://localhost:5001"
@@ -45,7 +46,7 @@ const Page = ({ params }: { params: { id: string } }) => {
   const [docName, setDocName] = useState<string>("");
   const [docDesc, setDocDesc] = useState<string>("");
   const [showSetting, setShowSetting] = useState(false);
-  const [selectedTheme, setSelectedTheme] = useState<string>('');
+  const [selectedTheme, setSelectedTheme] = useState<string>(localStorage.getItem('editorTheme')||"");
 
   const handleThemeChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     setSelectedTheme(event.target.value);
@@ -62,6 +63,15 @@ const Page = ({ params }: { params: { id: string } }) => {
     fetchData();
   }, [params.id]);
 
+  useEffect(()=>{
+    console.log(searchResult)
+  }, [searchResult])
+
+  useEffect(()=>{
+    console.log(searchSelectedPath)
+  }, [searchSelectedPath])
+
+
   useEffect(() => {
     if (project) {
       ws.send(JSON.stringify({ type: "project:started", data: { id: project.id } }));
@@ -76,14 +86,6 @@ const Page = ({ params }: { params: { id: string } }) => {
     }
   };
 
-  const handleDescChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newDesc = e.target.value
-    setDocDesc(newDesc);
-    if (project) {
-      await updateDocumentTitleDescription(params.id, docName, docDesc);
-    }
-  };
-
   return (
     <div className="custom-scrollbar w-screen">
       <header className="grid grid-cols-3 text-white-1 items-center py-1 px-5" style={{ borderBottom: "0.5px solid rgba(255, 255, 255, 0.4)" }}>
@@ -92,9 +94,7 @@ const Page = ({ params }: { params: { id: string } }) => {
           <div className="text-white-1 flex flex-col items-start justify-center w-full">
             <div className="flex gap-2 flex-grow-1">
               <input type='text' className='bg-transparent px-3' value={docName} onChange={handleTitleChange} />
-              <Image src="/icons/heart.svg" width={16} height={16} alt='like' />
             </div>
-            <input type='text' className='w-full bg-transparent px-3 text-small-regular text-white-2' value={docDesc} onChange={handleDescChange} />
           </div>
         </div>
         <div className="relative w-full bg-white-1">
@@ -130,17 +130,19 @@ const Page = ({ params }: { params: { id: string } }) => {
           </div>
         </div>
         <div className="relative w-full flex justify-end items-center">
-          <img
+          <Image
             src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSw7B6uZ6KGbEW1RqetJeXnUlPDFvEDLihjZw&s"
             alt="Settings"
-            className="w-8 h-8 cursor-pointer"
+            className="w-4 h-4 cursor-pointer"
             onClick={() => setShowSetting(!showSetting)}
+            width={14}
+            height={14}
           />
           {showSetting && (
-            <div className="absolute right-0 top-10 bg-white border border-gray-300 shadow-lg p-4 rounded-md z-50">
+            <div className="absolute right-0 top-10 bg-black-3 border border-gray-300 shadow-lg p-4 rounded-md z-50">
               <h3 className="text-lg font-semibold mb-2">Manage Themes</h3>
               <select
-                className="w-full bg-orange-1 border border-gray-300 rounded-md p-2"
+                className="w-full bg-orange-1 border rounded-md px-2"
                 value={selectedTheme}
                 onChange={handleThemeChange}
               >
@@ -150,6 +152,12 @@ const Page = ({ params }: { params: { id: string } }) => {
                   </option>
                 ))}
               </select>
+              <div className="w-full flex justify-end items-center">
+                <button className="bg-orange-1 mt-4 px-2 rounded-lg" onClick={()=>{
+                  localStorage.setItem('editorTheme', selectedTheme)
+                  setShowSetting(!showSetting)
+                }}>Save</button>
+              </div>
             </div>
           )}
         </div>
