@@ -74,7 +74,7 @@ const Page = ({ params }: { params: { id: string } }) => {
 
   useEffect(() => {
     if (project) {
-      ws.send(JSON.stringify({ type: "project:started", data: { id: project.id } }));
+      ws.send(JSON.stringify({ type: "project:started", data: { id: project } }));
     }
   }, [project]);
 
@@ -99,13 +99,13 @@ const Page = ({ params }: { params: { id: string } }) => {
         </div>
         <div className="relative w-full bg-white-1">
           <div className="w-full absolute bg-black-2 top-[-0.8rem] z-10 rounded-lg" style={{ border: "0.5px solid rgba(255, 255, 255, 0.4)" }}>
-            <div className="relative">
-              <p className="absolute left-5">🔎</p>
+            <div className="relative" style={{fontSize:"12px"}}>
+              <p className="absolute top-1 left-5">🔎</p>
               <input
                 type="text"
                 value={searchSelectedPath}
                 placeholder={selectedPath}
-                className="bg-black-2 rounded-lg text-center w-full"
+                className="bg-black-2 rounded-lg text-center w-full p-[2px]"
                 style={{ border: "0.5px solid rgba(255, 255, 255, 0.4)" }}
                 onChange={(e) => setSearchSeletedPath(e.target.value)}
                 onKeyDown={(e) => {
@@ -165,10 +165,7 @@ const Page = ({ params }: { params: { id: string } }) => {
       </header>
       <div className="main-container flex text-white-1">
         <div className="w-[290px] bg-black-3 h-[96vh] py-3 px-3 flex flex-col" style={{ borderRight: "0.5px solid rgba(255, 255, 255, 0.4)" }}>
-          <Link href="/" className="flex cursor-pointer items-center gap-1 pb-5 max-lg:justify-center">
-            <Image src="/icons/logo.png" alt="Podcast Logo" width={30} height={30} />
-            <h1 className="text-24 font-extrabold text-white max-lg:hidden">CollabWriter</h1>
-          </Link>
+          <p className="px-4 mb-7 text-white-2 text-small-regular">Explorer</p>
           <div className="overflow-y-scroll custom-scrollbar">
             <FileStructureTree
               onSelect={(path: string) => setSeletedPath(path)}
@@ -176,11 +173,12 @@ const Page = ({ params }: { params: { id: string } }) => {
               searchSelectedPath={searchSelectedPath}
               searchResult={searchResult}
               setSearchResult={setSearchResult}
+              docName={docName}
             />
           </div>
         </div>
         <div className="code-container w-full flex flex-col justify-between h-[95vh]">
-          <div className="editor h-full bg-black-1">
+          <div className="editor h-full bg-black-1" style={{ borderBottom: "0.5px solid rgba(255, 255, 255, 0.4)" }}>
             {selectedPath && (
               <div className="h-full">
                 <CodeEditor path={selectedPath} pId={project} selectedTheme={selectedTheme} />
