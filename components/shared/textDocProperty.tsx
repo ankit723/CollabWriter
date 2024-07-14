@@ -4,6 +4,8 @@ import React, {useState, useEffect} from 'react'
 import { Input } from '../ui/input'
 import { fetchDocument, updateDocumentPermission } from '@/lib/actions/document.action'
 import { Label } from '../ui/label'
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const TextDocProperty = ({doc_id, accessEmailsProp, isPublicProp}:any) => {
   const [openHandleModal, setOpenHandleModal]=useState<boolean>(false)
@@ -11,7 +13,7 @@ const TextDocProperty = ({doc_id, accessEmailsProp, isPublicProp}:any) => {
   const [isPublic, setIsPublic]=useState<boolean>(isPublicProp)
   const [input, setInput]=useState<string>("")
   const [accessEmails, setAccessEmails]=useState<string[]>(accessEmailsProp)
-
+  const notify = (notification: string) => toast(notification)
 
   const handleInput=(e:any)=>{
     console.log(input)
@@ -31,11 +33,11 @@ const TextDocProperty = ({doc_id, accessEmailsProp, isPublicProp}:any) => {
     
     if(isPublic){
       await updateDocumentPermission(doc_id, [""], isPublic)
-      alert("You have made the file public succesfully !")
+      notify("You have made the file public succesfully !")
       window.location.reload()
     }else{
       await updateDocumentPermission(doc_id, accessEmails, isPublic)
-      alert("The Permission related to the file has been changes successfully !")
+      notify("The Permission related to the file has been changes successfully !")
       window.location.reload()
     }
   };
@@ -43,6 +45,7 @@ const TextDocProperty = ({doc_id, accessEmailsProp, isPublicProp}:any) => {
 
   return (
     <div className="">
+      <ToastContainer />
       <div className=' z-10 hover:bg-white-3 cursor-pointer p-2 rounded-full' onClick={()=>setOpenHandleModal(!openHandleModal)}>
         <Image src={'/icons/three-dots.svg'} alt='three dots' width={22} height={22}/>
       </div>
