@@ -11,8 +11,6 @@ import { useCallback, useEffect, useState } from "react";
 import { Replace } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 
 const ws = new WebSocket(
   process.env.NEXT_PUBLIC_SOCKET_BACKEND_URL || "ws://localhost:5001"
@@ -46,6 +44,8 @@ const Page = ({ params }: { params: { id: string } }) => {
   const [docName, setDocName] = useState<string>("");
   const [docDesc, setDocDesc] = useState<string>("");
   const [showSetting, setShowSetting] = useState(false);
+  const [showTerminal, setShowTerminal] = useState(true);
+  const [showSideBar, setShowSideBar] = useState(true);
   const [selectedTheme, setSelectedTheme] = useState<string>(localStorage.getItem('editorTheme')||"");
 
   const handleThemeChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
@@ -56,9 +56,10 @@ const Page = ({ params }: { params: { id: string } }) => {
     const fetchData = async () => {
       const userInfo = await fetchUser(user?.id || "");
       const cProject = await fetchProject(params.id, userInfo?._id);
-      setProject(cProject.id);
-      setDocName(cProject.title);
-      setDocDesc(cProject.desc);
+      setProject(cProject?.id);
+      setDocName(cProject?.title);
+      setDocDesc(cProject?.desc);
+      console.log(cProject.title)
     };
     fetchData();
   }, [params.id]);
@@ -88,9 +89,9 @@ const Page = ({ params }: { params: { id: string } }) => {
 
   return (
     <div className="custom-scrollbar w-screen">
-      <header className="grid grid-cols-3 text-white-1 items-center py-1 px-5" style={{ borderBottom: "0.5px solid rgba(255, 255, 255, 0.4)" }}>
+      <header className="grid grid-cols-3 text-white-1 items-center py-1 px-8" style={{ borderBottom: "0.5px solid rgba(255, 255, 255, 0.4)" }}>
         <div className='flex cursor-pointer items-center gap-1 max-lg:justify-center'>
-          <Link href="/"><Image src="/icons/logo.png" alt="Podcast Logo" width={30} height={30} /></Link>
+          <Link href="/"><Image src="/icons/logo.png" alt="Podcast Logo" width={20} height={20} /></Link>
           <div className="text-white-1 flex flex-col items-start justify-center w-full">
             <div className="flex gap-2 flex-grow-1">
               <input type='text' className='bg-transparent px-3' value={docName} onChange={handleTitleChange} />
@@ -163,20 +164,36 @@ const Page = ({ params }: { params: { id: string } }) => {
         </div>
 
       </header>
+
+
       <div className="main-container flex text-white-1">
-        <div className="w-[290px] bg-black-3 h-[96vh] py-3 px-3 flex flex-col" style={{ borderRight: "0.5px solid rgba(255, 255, 255, 0.4)" }}>
-          <p className="px-4 mb-7 text-white-2 text-small-regular">Explorer</p>
+        {/* Sidebar */}
+
+        <div className={`w-[290px] bg-black-3 h-[96vh] py-3 px-3 flex flex-col ${showSideBar?"flex":"hidden"}`} style={{ borderRight: "0.5px solid rgba(255, 255, 255, 0.4)"}}>
+          <div className="w-full flex justify-between items-center px-4 mb-7 mt-2">
+            <p className="text-white-2 text-small-regular m-0">Explorer</p>
+            <Image src='/icons/hamburger.svg' alt="hamburger" width={25} height={25} className="hover:bg-white-2 rounded-full cursor-pointer p-1" onClick={()=>setShowSideBar(!showSideBar)}/>
+          </div>
           <div className="overflow-y-scroll custom-scrollbar">
-            <FileStructureTree
-              onSelect={(path: string) => setSeletedPath(path)}
-              pId={project}
-              searchSelectedPath={searchSelectedPath}
-              searchResult={searchResult}
-              setSearchResult={setSearchResult}
-              docName={docName}
-            />
+            {docName!==""?(
+              <FileStructureTree
+                onSelect={(path: string) => setSeletedPath(path)}
+                pId={project}
+                searchSelectedPath={searchSelectedPath}
+                searchResult={searchResult}
+                setSearchResult={setSearchResult}
+                docName={docName?docName:docName}
+              />              
+            ):""}
           </div>
         </div>
+
+        <div className={`absolute bg-transparent top-0 m-2 z-10 cursor-pointer ${!showSideBar?"block":"hidden"}`} onClick={()=>setShowSideBar(!showSideBar)}>
+          <Image src='/icons/hamburger.svg' alt="hamburger" width={18} height={18} className="text-black-2 cursor-pointer text-white-1"/>
+        </div>
+
+        {/* CodeContainer */}
+
         <div className="code-container w-full flex flex-col justify-between h-[95vh]">
           <div className="editor h-full bg-black-1" style={{ borderBottom: "0.5px solid rgba(255, 255, 255, 0.4)" }}>
             {selectedPath && (
@@ -185,7 +202,13 @@ const Page = ({ params }: { params: { id: string } }) => {
               </div>
             )}
           </div>
-          <Terminal />
+          <div className={`w-full bg-black-3 flex justify-between items-center text-white-1 px-5 ${showTerminal?'py-2':"py-0"}`}>
+            <p style={{borderBottom:"0.5px solid #877EFF", fontSize:"12px", margin:"0"}}>TERMINAL</p>
+            <p className={`${showTerminal?"-mt-2":"mt-0"} cursor-pointer`} style={{fontSize:"20px"}} onClick={()=>setShowTerminal(!showTerminal)}>{showTerminal?'⌄':'˄'}</p>
+          </div>
+          {showTerminal?(
+            <Terminal />
+          ):""}
         </div>
       </div>
     </div>
