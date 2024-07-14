@@ -4,6 +4,8 @@ import React, {useState, useEffect} from 'react'
 import { Input } from '../ui/input'
 import { deleteDocument, updateDocumentPermission, updateDocumentTitleDescription } from '@/lib/actions/document.action'
 import { Label } from '../ui/label'
+import { ToastContainer, ToastContentProps, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const TextDocCardOptions = ({doc_id, titleProp, descriptionProp, accessEmailsProp, isPublicProp}:any) => {
   const [openHandleModal, setOpenHandleModal]=useState<boolean>(false)
@@ -14,7 +16,7 @@ const TextDocCardOptions = ({doc_id, titleProp, descriptionProp, accessEmailsPro
   const [title, setTitle]=useState<string>(titleProp)
   const [description, setDescription]=useState<string>(descriptionProp)
   const [accessEmails, setAccessEmails]=useState<string[]>(accessEmailsProp)
-
+  const notify = (notification: string) => toast(notification)
   const handleInput=(e:any)=>{
     console.log(input)
     setInput(e.target.value)
@@ -36,14 +38,14 @@ const TextDocCardOptions = ({doc_id, titleProp, descriptionProp, accessEmailsPro
     }else{
       await updateDocumentPermission(doc_id, accessEmails, isPublic)
     }
-    alert("Permission Managed")
+    notify("Permission Managed")
     window.location.reload()
   };
 
   const handleRemoveDoc=async()=>{
     if(confirm("Are you sure you want to delete the document")){
         await deleteDocument(doc_id)
-        alert("document Deleted")
+        notify("document Deleted") // Notification for the alerting
     }
     window.location.reload()
   }
@@ -61,6 +63,7 @@ const TextDocCardOptions = ({doc_id, titleProp, descriptionProp, accessEmailsPro
 
   return (
     <div className="relative">
+      <ToastContainer />
       <div className=' hover:bg-white-3 cursor-pointer p-3 rounded-full' onClick={()=>setOpenHandleModal(!openHandleModal)}>
         <Image src={'/icons/three-dots.svg'} alt='three dots' width={17} height={17}/>
       </div>
@@ -115,7 +118,8 @@ const TextDocCardOptions = ({doc_id, titleProp, descriptionProp, accessEmailsPro
 
             <div className="w-full flex justify-end items-center">
                 <div className="mt-5 bg-dark-3 p-3 cursor-pointer rounded-lg hover:bg-dark-2" onClick={()=>{
-                    alert("Title and Description Renamed")
+                    
+                    notify("Title and Description Renamed")
                     window.location.reload()
                 }}>
                     Save
