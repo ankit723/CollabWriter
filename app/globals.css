@@ -12,7 +12,22 @@ html {
   background-color: #101114;
 }
 
+.editor-tab{
+  border-right: 0.5px solid rgba(255, 255, 255, 0.4);
+  border-left: 0.5px solid rgba(255, 255, 255, 0.4);
+  border-bottom: 0.5px solid rgba(255, 255, 255, 0.4);
+}
+
+.editor-tab:hover{
+  border-bottom: none;
+}
+
+.editor-tab-active{
+  border-bottom: none;
+}
+
 @layer utilities {
+  
   .no-focus {
     @apply focus-visible:ring-0 focus-visible:ring-transparent focus-visible:ring-offset-0 !important;
   }

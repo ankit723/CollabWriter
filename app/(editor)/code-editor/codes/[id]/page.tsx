@@ -7,10 +7,11 @@ import { fetchProject, updateDocumentTitleDescription } from "@/lib/actions/docu
 import Terminal from "@/components/forms/terminal";
 import FileStructureTree from "@/components/cards/fileStructureTree";
 import CodeEditor from "@/components/forms/codeEditor";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, useRef } from "react";
 import { Replace } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
+import Tabs from "@/components/cards/tabs";
 
 const ws = new WebSocket(
   process.env.NEXT_PUBLIC_SOCKET_BACKEND_URL || "ws://localhost:5001"
@@ -38,6 +39,8 @@ const themes = [
 const Page = ({ params }: { params: { id: string } }) => {
   const { user } = useUser();
   const [selectedPath, setSeletedPath] = useState<string>("");
+  const [allPaths, setAllPaths] = useState<string[]>([]);
+  const [selectedTabPath, setSelectedTabPath] = useState<any>(null);
   const [searchSelectedPath, setSearchSeletedPath] = useState<string>(selectedPath);
   const [project, setProject] = useState<any>(null);
   const [searchResult, setSearchResult] = useState<any>([]);
@@ -46,11 +49,24 @@ const Page = ({ params }: { params: { id: string } }) => {
   const [showSetting, setShowSetting] = useState(false);
   const [showTerminal, setShowTerminal] = useState(true);
   const [showSideBar, setShowSideBar] = useState(true);
+  const [termRows, setTermRows]=useState<number>(14)
+  const termBox=useRef(null);
+  const termBoxTop=useRef(null);
   const [selectedTheme, setSelectedTheme] = useState<string>(localStorage.getItem('editorTheme')||"");
 
   const handleThemeChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     setSelectedTheme(event.target.value);
   };
+
+  useEffect(()=>{
+    if(!allPaths.includes(selectedPath)){
+      setAllPaths([...allPaths, selectedPath])
+    }
+  }, [selectedPath])
+
+  useEffect(()=>{
+    setSelectedTabPath(allPaths[allPaths.length-1])
+  }, [allPaths])
 
   useEffect(() => {
     const fetchData = async () => {
@@ -78,6 +94,47 @@ const Page = ({ params }: { params: { id: string } }) => {
       ws.send(JSON.stringify({ type: "project:started", data: { id: project } }));
     }
   }, [project]);
+
+  useEffect(() => {
+    const terminalContainer:any = termBox.current;
+    const resizerTop:any = termBoxTop.current;
+
+    let height = terminalContainer?.clientHeight || 0;
+    let yCord = 0;
+
+    const onMouseMoveTopResize = (event: MouseEvent) => {
+      const dy = event.clientY - yCord;
+      height = height - dy;
+      yCord = event.clientY;
+      if (terminalContainer) {
+        terminalContainer.style.height = `${height}px`;
+      }
+    };
+
+    const onMouseUpTopResize = () => {
+      document.removeEventListener('mousemove', onMouseMoveTopResize);
+    };
+
+    const onMouseDownTopResize = (event: MouseEvent) => {
+      yCord = event.clientY;
+      console.log(yCord)
+      document.addEventListener('mousemove', onMouseMoveTopResize);
+      document.addEventListener('mouseup', onMouseUpTopResize);
+    };
+
+    if (resizerTop) {
+      resizerTop.addEventListener('mousedown', onMouseDownTopResize);
+    }
+
+    return () => {
+      document.removeEventListener('mousemove', onMouseMoveTopResize);
+      document.removeEventListener('mouseup', onMouseUpTopResize);
+      if (resizerTop) {
+        resizerTop.removeEventListener('mousedown', onMouseDownTopResize);
+      }
+    };
+  }, []);
+  
 
   const handleTitleChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const newTitle = e.target.value
@@ -195,20 +252,35 @@ const Page = ({ params }: { params: { id: string } }) => {
         {/* CodeContainer */}
 
         <div className="code-container w-full flex flex-col justify-between h-[95vh]">
-          <div className="editor h-full bg-black-1" style={{ borderBottom: "0.5px solid rgba(255, 255, 255, 0.4)" }}>
-            {selectedPath && (
+          <div className="h-full editor bg-black-1">
+            {selectedTabPath && (
               <div className="h-full">
-                <CodeEditor path={selectedPath} pId={project} selectedTheme={selectedTheme} />
+                <div className="tabs-section w-full bg-black-3 flex">
+                  {allPaths.map((paths:any)=>(
+                    <>
+                    {paths!==""?
+                      <Tabs filePath={paths} isActive={paths===selectedTabPath} setSelectedTabPath={setSelectedTabPath}/>:""
+                    }
+                    </>
+                  ))}
+                </div>
+                {selectedTabPath?(
+                  <CodeEditor path={selectedTabPath} pId={project} selectedTheme={selectedTheme} />
+                ):""}
               </div>
             )}
           </div>
-          <div className={`w-full bg-black-3 flex justify-between items-center text-white-1 px-5 ${showTerminal?'py-2':"py-0"}`}>
-            <p style={{borderBottom:"0.5px solid #877EFF", fontSize:"12px", margin:"0"}}>TERMINAL</p>
-            <p className={`${showTerminal?"-mt-2":"mt-0"} cursor-pointer`} style={{fontSize:"20px"}} onClick={()=>setShowTerminal(!showTerminal)}>{showTerminal?'⌄':'˄'}</p>
+          
+          <div ref={termBox} className={`terminal-container relative ${selectedTabPath?"mt-7":""}`} style={{ borderTop: "0.5px solid rgba(255, 255, 255, 0.4)" }}>
+            <div ref={termBoxTop} className="resizer rt absolute top-0 left-0 w-full cursor-row-resize h-1 hover:h-[2px] hover:bg-orange-1 "></div>
+            <div className={`w-full bg-black-3 flex justify-between items-center text-white-1 px-5 ${showTerminal?'py-2':"py-0"}`}>
+              <p style={{borderBottom:"0.5px solid #877EFF", fontSize:"12px", margin:"0"}}>TERMINAL</p>
+              <p className={`${showTerminal?"-mt-2":"mt-0"} cursor-pointer`} style={{fontSize:"20px"}} onClick={()=>setShowTerminal(!showTerminal)}>{showTerminal?'⌄':'˄'}</p>
+            </div>
+            {showTerminal?(
+              <Terminal />
+            ):""}
           </div>
-          {showTerminal?(
-            <Terminal />
-          ):""}
         </div>
       </div>
     </div>
