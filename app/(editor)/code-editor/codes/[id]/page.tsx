@@ -246,7 +246,7 @@ const Page = ({ params }: { params: { id: string } }) => {
         </div>
 
         <div className={`absolute bg-transparent top-0 m-2 z-10 cursor-pointer ${!showSideBar?"block":"hidden"}`} onClick={()=>setShowSideBar(!showSideBar)}>
-          <Image src='/icons/hamburger.svg' alt="hamburger" width={18} height={18} className="text-black-2 cursor-pointer text-white-1"/>
+          <Image src='/icons/hamburger.svg' alt="hamburger" width={18} height={18} className="cursor-pointer text-white-1"/>
         </div>
 
         {/* CodeContainer */}

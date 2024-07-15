@@ -26,6 +26,8 @@ const Terminal = () => {
             term.element.style.padding="20px"
         }
 
+        document.getElementsByClassName('xterm-viewport')[0].classList.add('custom-scrollbar')
+
         term.onData((data:any)=>{
             console.log(data)
             ws.send(JSON.stringify({ type: 'terminal:write', data: data }));
