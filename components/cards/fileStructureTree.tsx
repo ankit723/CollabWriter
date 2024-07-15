@@ -471,16 +471,16 @@ const FileTreeNode = ({ fileName, nodes, onSelect, path, searchSelectedPath, set
         </>
       )}
 
-      <div className="bg-black-4 p-1 rounded-lg w-52" style={{ ...menuStyle, position: "fixed", border: "1px solid black", zIndex: 1000, }}>
-        <div className="px-2 py-[1px] my-1 hover:bg-orange-1 rounded-md" style={{ cursor: "pointer", fontSize: "13px" }} onClick={() => handleMenuClick("rename", path)}>Rename</div>
-        <div className="px-2 py-[1px] my-1 hover:bg-orange-1 rounded-md" style={{ cursor: "pointer", fontSize: "13px" }} onClick={() => handleMenuClick("delete", path)}>Delete</div>
+      <div className="bg-black-4 p-1 rounded-lg min-w-52"style={{...menuStyle,position: "fixed",border: "1px solid black",zIndex: 1000,}}>
+        <div className="px-2 py-[1px] my-1 hover:bg-orange-1 rounded-md"style={{ cursor: "pointer", fontSize: "13px" }}onClick={() => handleMenuClick("rename", path)}>Rename</div>
+        <div className="px-2 py-[1px] my-1 hover:bg-orange-1 rounded-md"style={{ cursor: "pointer", fontSize: "13px" }}onClick={() => handleMenuClick("delete", path)}>Delete</div>
       </div>
-
-      <div className="bg-black-4 p-1 rounded-lg w-52" style={{ ...folderMenuStyle, position: "fixed", border: "1px solid black", zIndex: 1000, }}>
-        <div className="px-2 py-[1px] my-1 hover:bg-orange-1 rounded-md" style={{ cursor: "pointer", fontSize: "13px" }} onClick={() => handleFolderMenuClick("create-folder", path)}>New Folder...</div>
-        <div className="px-2 py-[1px] my-1 hover:bg-orange-1 rounded-md" style={{ cursor: "pointer", fontSize: "13px" }} onClick={() => handleFolderMenuClick("create-file", path)}>New File...</div>
-        <div className="px-2 py-[1px] my-1 hover:bg-orange-1 rounded-md" style={{ cursor: "pointer", fontSize: "13px" }} onClick={() => handleFolderMenuClick("rename", path)}>Rename</div>
-        <div className="px-2 py-[1px] my-1 hover:bg-orange-1 rounded-md" style={{ cursor: "pointer", fontSize: "13px" }} onClick={() => handleFolderMenuClick("delete", path)}>Delete</div>
+      
+      <div className="bg-black-4 p-1 rounded-lg min-w-52"style={{...folderMenuStyle,position: "fixed",border: "1px solid black",zIndex: 1000,}}>
+        <div className="px-2 py-[1px] my-1 hover:bg-orange-1 rounded-md"style={{ cursor: "pointer", fontSize: "13px" }}onClick={() => handleFolderMenuClick("create-folder", path)}>New Folder...</div>
+        <div className="px-2 py-[1px] my-1 hover:bg-orange-1 rounded-md"style={{ cursor: "pointer", fontSize: "13px" }}onClick={() => handleFolderMenuClick("create-file", path)}>New File...</div>
+        <div className="px-2 py-[1px] my-1 hover:bg-orange-1 rounded-md"style={{ cursor: "pointer", fontSize: "13px" }}onClick={() => handleFolderMenuClick("rename", path)}>Rename</div>
+        <div className="px-2 py-[1px] my-1 hover:bg-orange-1 rounded-md"style={{ cursor: "pointer", fontSize: "13px" }}onClick={() => handleFolderMenuClick("delete", path)}>Delete</div>
       </div>
     </div>
   );
