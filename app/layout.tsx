@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter, Manrope } from "next/font/google";
 import "./globals.css";
+import 'devicon/devicon.min.css'; 
 import { ClerkProvider } from "@clerk/nextjs";
 import { dark, neobrutalism } from '@clerk/themes';
 
