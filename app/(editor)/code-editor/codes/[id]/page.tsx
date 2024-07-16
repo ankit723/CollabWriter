@@ -143,6 +143,10 @@ const Page = ({ params }: { params: { id: string } }) => {
     }
   };
 
+  const handleRemoveTab=(index:number)=>{
+    allPaths.splice(index, 1)
+  }
+
   return (
     <div className="custom-scrollbar w-screen">
       <header className="grid grid-cols-3 text-white-1 items-center py-1 px-8" style={{ borderBottom: "0.5px solid rgba(255, 255, 255, 0.4)" }}>
@@ -255,10 +259,10 @@ const Page = ({ params }: { params: { id: string } }) => {
             {selectedTabPath && (
               <div className="h-full">
                 <div className="tabs-section w-full bg-black-3 flex">
-                  {allPaths.map((paths:any)=>(
+                  {allPaths.map((paths:any, index:number)=>(
                     <>
                     {paths!==""?
-                      <Tabs filePath={paths} isActive={paths===selectedTabPath} setSelectedTabPath={setSelectedTabPath}/>:""
+                      <Tabs filePath={paths} isActive={paths===selectedTabPath} setSelectedTabPath={setSelectedTabPath} index={index} handleRemoveTab={handleRemoveTab}/>:""
                     }
                     </>
                   ))}
