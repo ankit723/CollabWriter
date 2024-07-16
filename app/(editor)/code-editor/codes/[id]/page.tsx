@@ -332,11 +332,11 @@ const Page = ({ params }: { params: { id: string } }) => {
             {selectedTabPath && (
               <div className="h-full">
                 <div className={`tabs-section w-full ${isDarkMode ? "bg-black-3" : "bg-white-3"} flex`}>
-                  {allPaths.map((paths: any, index:number) => (
+                  {allPaths.map((paths: any, index:number)=>(
                     <>
-                      {paths !== "" ?
-                        <Tabs filePath={paths} isActive={paths === selectedTabPath} setSelectedTabPath={setSelectedTabPath} index={index} handleRemoveTab={handleRemoveTab} /> : ""
-                      }
+                    {paths!==""?
+                      <Tabs filePath={paths} isActive={paths===selectedTabPath} setSelectedTabPath={setSelectedTabPath} index={index} handleRemoveTab={handleRemoveTab}/>:""
+                    }
                     </>
                   ))}
                 </div>
