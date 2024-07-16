@@ -1,6 +1,6 @@
 import React from 'react'
 
-const Tabs = ({filePath, isActive, setSelectedTabPath, index, handleRemoveTab}:any) => {
+const Tabs = ({filePath, isActive, setSelectedTabPath, setSeletedPath, index, handleRemoveTab}:any) => {
     const fileName=filePath.split('/').pop()
     const iconMapping: { [key: string]: string }= {
       js: 'devicon-javascript-plain colored',
@@ -199,7 +199,7 @@ const Tabs = ({filePath, isActive, setSelectedTabPath, index, handleRemoveTab}:a
       zig: 'devicon-devicon-plain colored', 
     };
   return (
-    <div className={` w-full editor-tab ${isActive?'editor-tab-active':''} px-6 py-[5px] cursor-pointer text-small-regular flex justify-between items-center`} onClick={()=>setSelectedTabPath(filePath)}>
+    <div className={` w-full editor-tab ${isActive?'editor-tab-active':''} px-6 py-[6px] cursor-pointer text-small-regular flex justify-between items-center`} onClick={()=>{setSelectedTabPath(filePath); setSeletedPath(filePath)}}>
       <div className="flex justify-between items-center gap-2">
         <i className={iconMapping[fileName.split(".").pop() as string]}></i>  {fileName}
       </div>

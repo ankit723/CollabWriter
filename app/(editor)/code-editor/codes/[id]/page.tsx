@@ -83,6 +83,7 @@ const Page = ({ params }: { params: { id: string } }) => {
     if (!allPaths.includes(selectedPath)) {
       setAllPaths([...allPaths, selectedPath])
     }
+    setSelectedTabPath(selectedPath)
   }, [selectedPath])
 
 
@@ -335,7 +336,7 @@ const Page = ({ params }: { params: { id: string } }) => {
                   {allPaths.map((paths: any, index:number)=>(
                     <>
                     {paths!==""?
-                      <Tabs filePath={paths} isActive={paths===selectedTabPath} setSelectedTabPath={setSelectedTabPath} index={index} handleRemoveTab={handleRemoveTab}/>:""
+                      <Tabs filePath={paths} isActive={paths===selectedTabPath} setSelectedTabPath={setSelectedTabPath} setSeletedPath={setSeletedPath} index={index} handleRemoveTab={handleRemoveTab}/>:""
                     }
                     </>
                   ))}
