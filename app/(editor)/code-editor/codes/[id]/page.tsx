@@ -49,7 +49,6 @@ const Page = ({ params }: { params: { id: string } }) => {
   const [showSetting, setShowSetting] = useState(false);
   const [showTerminal, setShowTerminal] = useState(true);
   const [showSideBar, setShowSideBar] = useState(true);
-  const [termRows, setTermRows]=useState<number>(14)
   const termBox=useRef(null);
   const termBoxTop=useRef(null);
   const [selectedTheme, setSelectedTheme] = useState<string>(localStorage.getItem('editorTheme')||"");
@@ -176,7 +175,7 @@ const Page = ({ params }: { params: { id: string } }) => {
             {searchResult.length !== 0 && searchResult.map((res: string, index: number) => (
               <p
                 key={index}
-                className="text-white-1 cursor-pointer hover:bg-orange-1 rounded-b-lg px-5 py-1"
+                className="text-white-1 cursor-pointer hover:bg-orange-1 rounded-b-lg px-5 py-1 text-small-regular"
                 onClick={() => {
                   setSeletedPath(res);
                   setSearchSeletedPath("");
@@ -277,8 +276,8 @@ const Page = ({ params }: { params: { id: string } }) => {
               <p style={{borderBottom:"0.5px solid #877EFF", fontSize:"12px", margin:"0"}}>TERMINAL</p>
               <p className={`${showTerminal?"-mt-2":"mt-0"} cursor-pointer`} style={{fontSize:"20px"}} onClick={()=>setShowTerminal(!showTerminal)}>{showTerminal?'⌄':'˄'}</p>
             </div>
-            {showTerminal?(
-              <Terminal />
+            {showTerminal && project?(
+              <Terminal pId={project}/>
             ):""}
           </div>
         </div>
