@@ -188,6 +188,10 @@ const Page = ({ params }: { params: { id: string } }) => {
     }
   };
 
+  const handleRemoveTab=(index:number)=>{
+    allPaths.splice(index, 1)
+  }
+
   return (
     <div className="custom-scrollbar w-screen">
       <header className={`grid grid-cols-3 items-center py-1 px-8 ${isDarkMode ? 'bg-black-1 text-white-1' : 'bg-white-1 text-black-1'}`} style={{ borderBottom: isDarkMode ? '0.5px solid rgba(255, 255, 255, 0.4)' : '0.5px solid rgba(0, 0, 0, 0.4)' }}>
@@ -300,8 +304,8 @@ const Page = ({ params }: { params: { id: string } }) => {
 
         <div className={`w-[290px] ${isDarkMode ? 'bg-black-3' : 'bg-white-1'} h-[96vh] py-3 px-3 flex flex-col ${showSideBar ? "flex" : "hidden"}`} style={{ borderRight: isDarkMode ? "0.5px solid rgba(255, 255, 255, 0.4)" : "0.5px solid rgba(0, 0, 0, 0.4)" }}>
           <div className="w-full flex justify-between items-center px-4 mb-7 mt-2">
-            <p className={`${isDarkMode ? 'text-white-2' : 'text-black-1'} text-small-regular m-0`}>Explorer</p>
-            <Image src='/icons/hamburger.svg' alt="hamburger" width={25} height={25} className={`${isDarkMode? "hover:bg-white-2":" bg-gray-300 hover:bg-black-2 "} rounded-full cursor-pointer p-1`} onClick={() => setShowSideBar(!showSideBar)} />
+            <p className={` ${!isDarkMode?"text-black-2":"text-white-2"} text-small-regular m-0`}>Explorer</p>
+            <Image src={isDarkMode?'/icons/hamburger.svg':'/icons/dark-hamburger.svg'} alt="hamburger" width={25} height={25} className={` ${isDarkMode?"hover:bg-white-2":"hover:bg-gray-50"} rounded-full cursor-pointer p-1` }onClick={()=>setShowSideBar(!showSideBar)}/>
           </div>
           <div className="overflow-y-scroll custom-scrollbar">
             {docName !== "" ? (
@@ -317,8 +321,8 @@ const Page = ({ params }: { params: { id: string } }) => {
           </div>
         </div>
 
-        <div className={`absolute bg-transparent top-0 m-2 z-10 cursor-pointer ${!showSideBar ? "block" : "hidden"}`} onClick={() => setShowSideBar(!showSideBar)}>
-          <Image src='/icons/hamburger.svg' alt="hamburger" width={18} height={18} className={"cursor-pointer text-white-1"} />
+        <div className={`absolute bg-transparent top-0 m-2 z-10 cursor-pointer ${!showSideBar?"block":"hidden"}`} onClick={()=>setShowSideBar(!showSideBar)}>
+          <Image src={isDarkMode?'/icons/hamburger.svg':'/icons/dark-hamburger.svg'} alt="hamburger" width={18} height={18} className="cursor-pointer text-white-1"/>
         </div>
 
         {/* CodeContainer */}
@@ -328,10 +332,10 @@ const Page = ({ params }: { params: { id: string } }) => {
             {selectedTabPath && (
               <div className="h-full">
                 <div className={`tabs-section w-full ${isDarkMode ? "bg-black-3" : "bg-white-3"} flex`}>
-                  {allPaths.map((paths: any) => (
+                  {allPaths.map((paths: any, index:number) => (
                     <>
                       {paths !== "" ?
-                        <Tabs filePath={paths} isActive={paths === selectedTabPath} setSelectedTabPath={setSelectedTabPath} /> : ""
+                        <Tabs filePath={paths} isActive={paths === selectedTabPath} setSelectedTabPath={setSelectedTabPath} index={index} handleRemoveTab={handleRemoveTab} /> : ""
                       }
                     </>
                   ))}
