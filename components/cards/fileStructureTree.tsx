@@ -216,7 +216,7 @@ const FileTreeNode = ({ fileName, nodes, onSelect, path, searchSelectedPath, set
   const folderMenuRef = useRef<HTMLDivElement | null>(null);
   const [isDarkMode, setIsDarkMode] = useState(() =>
     typeof window !== 'undefined' ? localStorage.getItem('theme') === 'dark' : false
-  );
+  ); {/* localstorage */}
 
 
   const isFolder = nodes !== null;

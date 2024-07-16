@@ -290,7 +290,7 @@ const Page = ({ params }: { params: { id: string } }) => {
                 <button className="bg-orange-1 mt-4 px-2 rounded-lg" onClick={() => {
                   localStorage.setItem('editorTheme', selectedTheme)
                   setShowSetting(!showSetting)
-                }}>Save</button>
+                }}>Save</button> {/* saving*/}
               </div>
             </div>
           )}
