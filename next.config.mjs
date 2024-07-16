@@ -16,6 +16,10 @@ const nextConfig = {
             },
             {
                 protocol: 'https',
+                hostname: 'w7.pngwing.com'
+            },
+            {
+                protocol: 'https',
                 hostname: 'google.oit.ncsu.edu'
             },
             {

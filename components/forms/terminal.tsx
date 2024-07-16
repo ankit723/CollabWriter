@@ -1,5 +1,5 @@
 'use client'
-import React, { useEffect, useRef } from 'react'
+import React, { useEffect, useRef,useState } from 'react'
 import {Terminal as XTerminal} from '@xterm/xterm'
 import '@xterm/xterm/css/xterm.css'
 
@@ -8,13 +8,17 @@ const ws = new WebSocket(process.env.NEXT_PUBLIC_SOCKET_BACKEND_URL || 'ws://loc
 const Terminal = () => {
     const terminalRef:any=useRef()
     const isRendered=useRef(false);
+    const [isDarkMode] = useState(() =>
+        typeof window !== 'undefined' ? localStorage.getItem('theme') === 'dark' : false
+      );
 
     useEffect(()=>{
         if(isRendered.current) return
         isRendered.current=true;
         const term=new XTerminal({
             theme:{
-                background:"rgb(16 17 20 )",
+                background:isDarkMode?"rgb(16 17 20 )":"rgb(239, 238, 235)",
+                foreground: isDarkMode ? "rgb(255, 255, 255)" : "rgb(0, 0, 0)",
             },
             rows:14,
             cols:88,
