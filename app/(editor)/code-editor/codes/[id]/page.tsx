@@ -58,10 +58,9 @@ const Page = ({ params }: { params: { id: string } }) => {
     typeof window !== 'undefined' ? localStorage.getItem('theme') === 'dark' : false
   );
 
-  const termBox = useRef(null);
-  const termBoxTop = useRef(null);
-
   const searchResultsRef = useRef<HTMLDivElement | null>(null);
+  const termBox=useRef(null);
+  const termBoxTop=useRef(null);
 
   const handleThemeChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     setSelectedTheme(event.target.value);
@@ -221,7 +220,7 @@ const Page = ({ params }: { params: { id: string } }) => {
             {searchResult.length !== 0 && searchResult.map((res: string, index: number) => (
               <p
                 key={index}
-                className={`${isDarkMode ? 'text-white-1' : 'text-black-1'} cursor-pointer hover:bg-orange-1 rounded-b-lg px-5 py-1`}
+                className={`${isDarkMode ? 'text-white-1' : 'text-black-1'} cursor-pointer hover:bg-orange-1 rounded-b-lg px-5 py-1 text-small-regular`}
                 onClick={() => {
                   setSeletedPath(res);
                   setSearchSeletedPath("");
@@ -353,6 +352,9 @@ const Page = ({ params }: { params: { id: string } }) => {
             {showTerminal ? (
               <Terminal />
             ) : ""}
+            {showTerminal && project?(
+              <Terminal pId={project}/>
+            ):""}
           </div>
         </div>
       </div>

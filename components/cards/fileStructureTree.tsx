@@ -409,7 +409,7 @@ const FileTreeNode = ({ fileName, nodes, onSelect, path, searchSelectedPath, set
 
   return (
     <div
-      className={`${isDarkMode?"bg-black-3":""}`}
+      className={`${isDarkMode?"bg-black-3":"bg-white-1"}`}
       style={{ marginLeft: "17px", position: "relative" }}
       onClick={handleClick}
     >
@@ -426,7 +426,7 @@ const FileTreeNode = ({ fileName, nodes, onSelect, path, searchSelectedPath, set
                   handleFolderRename(path);
                 }
               }}
-              className="bg-black-3"
+              className={`${isDarkMode?"bg-black-3":"bg-white-1"}`}
               autoFocus
             />
           ) : (
