@@ -8,6 +8,9 @@ const Terminal = ({ pId }: any) => {
     const terminalRef: any = useRef()
     const isRendered = useRef(false)
     const wsRef = useRef<WebSocket>()
+    const [isDarkMode] = useState(() =>
+        typeof window !== 'undefined' ? localStorage.getItem('theme') === 'dark' : false
+      );
 
     useEffect(() => {
         setProjectId(pId)
@@ -19,7 +22,8 @@ const Terminal = ({ pId }: any) => {
 
         const term = new XTerminal({
             theme: {
-                background: "rgb(16 17 20 )",
+                background:isDarkMode?"rgb(16 17 20 )":"rgb(239, 238, 235)",
+                foreground: isDarkMode ? "rgb(255, 255, 255)" : "rgb(0, 0, 0)",
             },
             rows: 14,
             cols: 88,
@@ -67,5 +71,4 @@ const Terminal = ({ pId }: any) => {
         <div id='terminal py-10' ref={terminalRef}></div>
     )
 }
-
 export default Terminal

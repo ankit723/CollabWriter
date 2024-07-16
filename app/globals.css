@@ -10,6 +10,7 @@
 
 html {
   background-color: #101114;
+  color: #e0e0e0;
 }
 
 .editor-tab{
@@ -24,6 +25,27 @@ html {
 
 .editor-tab-active{
   border-bottom: none;
+}
+
+@media (prefers-color-scheme: light) {
+  html {
+    background-color: #f5f5f5; /* Light theme background */
+    color: #333; /* Light theme text color */
+  }
+}
+
+:root[data-theme='light'] {
+  --bg-color: white;
+  --text-color: black;
+  --secondary-bg-color: #f0f0f0;
+  --secondary-text-color: #333;
+}
+
+:root[data-theme='dark'] {
+  --bg-color: #121212;
+  --text-color: white;
+  --secondary-bg-color: #333;
+  --secondary-text-color: #bbb;
 }
 
 @layer utilities {
@@ -113,6 +135,13 @@ html {
   background-color: white;
 }
 
+@media (prefers-color-scheme: light) {
+  .editor-container .ql-editor {
+    background-color: #ffffff;
+    color: #000000; 
+  }
+}
+
 .editor-container .ql-container.ql-snow{
   border: none;
   display: flex;
@@ -133,6 +162,13 @@ html {
 
 .ql-toolbar.ql-container.ql-snow{
   color: white !important;
+}
+
+@media (prefers-color-scheme: light) {
+  .editor-container .ql-toolbar.ql-snow {
+    @apply bg-light-2; 
+    color: #333; 
+  }
 }
 
 @media print{
@@ -242,4 +278,44 @@ html {
 }
 .cl-internal-wkkub3 {
   color: #f97535;
+}
+
+.toggle-checkbox {
+  appearance: none;
+  background-color: #222222;
+  border-radius: 9999px;
+  width: 34px;
+  height: 20px;
+  position: relative;
+  outline: none;
+  cursor: pointer;
+}
+
+.toggle-checkbox:checked {
+  background-color: #4ade80;
+}
+
+.toggle-checkbox:checked::before {
+  transform: translateX(14px);
+}
+
+.toggle-checkbox::before {
+  content: '';
+  display: block;
+  width: 16px;
+  height: 16px;
+  background-color: #ffffff;
+  border-radius: 9999px;
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  transition: transform 0.3s ease;
+}
+.custom-scrollbar {
+  background-color: var(--bg-color);
+  color: var(--text-color);
+}
+.theme-list {
+  background-color: black;
+  color: white;
 }
