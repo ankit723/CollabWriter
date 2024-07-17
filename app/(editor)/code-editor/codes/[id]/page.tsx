@@ -530,7 +530,7 @@ const Page = ({ params }: { params: { id: string } }) => {
             )}
           </div>
 
-          <div ref={termBox} className={`terminal-container relative ${selectedTabPath ? "mt-[2.1rem]" : ""}`} style={{ borderTop: isDarkMode ? "0.5px solid rgba(255, 255, 255, 0.4)" : "0.5px solid rgba(0, 0, 0, 0.4)" }}>
+          <div ref={termBox} className={`terminal-container relative ${selectedTabPath ? "mt-8" : ""}`} style={{ borderTop: isDarkMode ? "0.5px solid rgba(255, 255, 255, 0.4)" : "0.5px solid rgba(0, 0, 0, 0.4)" }}>
             <div ref={termBoxTop} className="resizer rt absolute top-0 left-0 w-full cursor-row-resize h-1 hover:h-[2px] hover:bg-orange-1 "></div>
             <div className={`w-full ${isDarkMode ? "bg-black-3 text-white-1" : "bg-[whitesmoke] text-black-1"}  flex justify-between items-center  px-5 ${showTerminal ? 'py-2' : "py-0"}`}>
               <p style={{ borderBottom: "0.5px solid #877EFF", fontSize: "12px", margin: "0" }}>TERMINAL</p>
