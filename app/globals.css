@@ -32,13 +32,13 @@ html {
 
 .editor-tab-active{
   border-bottom: none;
-  border-top: 2px solid rgba(0, 0, 255, 0.758);
+  border-top: 2px solid rgba(0, 102, 255, 0.758);
   background-color: #55555874;
 }
 
 .editor-tab-light-active{
   border-bottom: none;
-  border-top: 2px solid rgba(0, 0, 255, 0.758);
+  border-top: 2px solid rgba(0, 102, 255, 0.758);
   background-color: white;
 }
 
