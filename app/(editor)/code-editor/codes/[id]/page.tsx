@@ -195,7 +195,7 @@ const Page = ({ params }: { params: { id: string } }) => {
 
   return (
     <div className="custom-scrollbar w-screen">
-      <header className={`grid grid-cols-3 items-center py-1 px-8 ${isDarkMode ? 'bg-black-1 text-white-1' : 'bg-white-1 text-black-1'}`} style={{ borderBottom: isDarkMode ? '0.5px solid rgba(255, 255, 255, 0.4)' : '0.5px solid rgba(0, 0, 0, 0.4)' }}>
+      <header className={`grid grid-cols-3 items-center py-1 px-8 ${isDarkMode ? 'bg-black-3 text-white-1' : 'bg-[whitesmoke] text-black-1'}`} style={{ borderBottom: isDarkMode ? '0.5px solid rgba(255, 255, 255, 0.4)' : '0.5px solid rgba(0, 0, 0, 0.4)' }}>
         <div className='flex cursor-pointer items-center gap-1 max-lg:justify-center'>
           <Link href="/"><Image src="/icons/logo.png" alt="Podcast Logo" width={20} height={20} /></Link>
           <div className={`${isDarkMode? "text-white-1" : "text-black-1"} flex flex-col items-start justify-center w-full`}>
@@ -205,14 +205,14 @@ const Page = ({ params }: { params: { id: string } }) => {
           </div>
         </div>
         <div className="relative w-full bg-white-1">
-          <div className={`w-full absolute ${isDarkMode ? 'bg-black-2' : 'bg-gray-200'} top-[-0.8rem] z-10 rounded-lg`} style={{ border: "0.5px solid rgba(255, 255, 255, 0.4)" }} ref={searchResultsRef}>
+          <div className={`w-full absolute ${isDarkMode ? 'bg-black-2' : 'bg-[whitesmoke] shadow-2xl'} top-[-0.8rem] z-10 rounded-lg`} style={{ border: "0.5px solid rgba(255, 255, 255, 0.4)" }} ref={searchResultsRef}>
             <div className="relative" style={{ fontSize: "12px" }}>
               <p className="absolute top-1 left-5">🔎</p>
               <input
                 type="text"
                 value={searchSelectedPath}
                 placeholder={selectedPath}
-                className={`${isDarkMode? "bg-black-2" : "bg-white-2"}  rounded-lg text-center w-full p-[2px]`}
+                className={`${isDarkMode? "bg-black-2" : "bg-white-1"}  rounded-lg text-center w-full p-[2px]`}
                 style={{ border: isDarkMode ? '0.5px solid rgba(255, 255, 255, 0.4)' : '0.5px solid rgba(0, 0, 0, 0.4)' }}
                 onChange={(e) => setSearchSeletedPath(e.target.value)}
                 onKeyDown={(e) => {
@@ -248,7 +248,7 @@ const Page = ({ params }: { params: { id: string } }) => {
             height={14}
           />
           {showSetting && (
-            <div className={`absolute right-0 top-10 ${isDarkMode ? 'bg-black-3 ' : 'bg-white-3 '} border border-gray-300 shadow-lg p-4 rounded-md z-50 w-[300px]`}>
+            <div className={`absolute right-0 top-10 ${isDarkMode ? 'bg-black-3 ' : 'bg-[whitesmoke] '} border border-gray-300 shadow-2xl p-4 rounded-md z-50 w-[300px]`}>
               <h3 className="text-lg font-semibold mb-2">Manage Themes</h3>
               <div
                 className="theme-toggle bg-orange-1 px-2 rounded-lg cursor-pointer"
@@ -282,7 +282,10 @@ const Page = ({ params }: { params: { id: string } }) => {
                 <input
                   type="checkbox"
                   checked={isDarkMode}
-                  onChange={() => setIsDarkMode(!isDarkMode)}
+                  onChange={() => {
+                    setIsDarkMode(!isDarkMode)
+                    setSelectedTheme(!isDarkMode?"cloud9_night_low_color":"xcode")
+                  }}
                   className="toggle-checkbox"
                 />
               </div>
@@ -303,12 +306,12 @@ const Page = ({ params }: { params: { id: string } }) => {
       <div className={`main-container flex ${isDarkMode ? "text-white-1" : "text-black-1"}`}>
         {/* Sidebar */}
 
-        <div className={`w-[290px] ${isDarkMode ? 'bg-black-3' : 'bg-white-1'} h-[96vh] py-3 px-3 flex flex-col ${showSideBar ? "flex" : "hidden"}`} style={{ borderRight: isDarkMode ? "0.5px solid rgba(255, 255, 255, 0.4)" : "0.5px solid rgba(0, 0, 0, 0.4)" }}>
+        <div className={`w-[290px] ${isDarkMode ? 'bg-black-3' : 'bg-[whitesmoke]'} h-[96vh] py-3 px-3 flex flex-col ${showSideBar ? "flex" : "hidden"}`} style={{ borderRight: isDarkMode ? "0.5px solid rgba(255, 255, 255, 0.4)" : "0.5px solid rgba(0, 0, 0, 0.4)" }}>
           <div className="w-full flex justify-between items-center px-4 mb-7 mt-2">
             <p className={` ${!isDarkMode?"text-black-2":"text-white-2"} text-small-regular m-0`}>Explorer</p>
             <Image src={isDarkMode?'/icons/hamburger.svg':'/icons/dark-hamburger.svg'} alt="hamburger" width={25} height={25} className={` ${isDarkMode?"hover:bg-white-2":"hover:bg-gray-50"} rounded-full cursor-pointer p-1` }onClick={()=>setShowSideBar(!showSideBar)}/>
           </div>
-          <div className="overflow-y-scroll custom-scrollbar">
+          <div className="overflow-y-scroll no-scrollbar">
             {docName !== "" ? (
               <FileStructureTree
                 onSelect={(path: string) => setSeletedPath(path)}
@@ -317,6 +320,7 @@ const Page = ({ params }: { params: { id: string } }) => {
                 searchResult={searchResult}
                 setSearchResult={setSearchResult}
                 docName={docName ? docName : docName}
+                isDarkMode={isDarkMode}
               />
             ) : ""}
           </div>
@@ -328,15 +332,15 @@ const Page = ({ params }: { params: { id: string } }) => {
 
         {/* CodeContainer */}
 
-        <div className="code-container w-full flex flex-col justify-between h-[95vh]">
-          <div className={`h-full editor ${isDarkMode ? 'bg-black-1' : 'bg-gray-100'}`}>
+        <div className="code-container w-full flex flex-col justify-between h-[96vh]">
+          <div className={`h-full editor ${isDarkMode ? 'bg-black-3' : 'bg-[white]'}`}>
             {selectedTabPath && (
               <div className="h-full">
-                <div className={`tabs-section w-full ${isDarkMode ? "bg-black-3" : "bg-white-3"} flex`}>
+                <div className={`tabs-section w-[100%] ${isDarkMode ? "bg-black-3" : "bg-[whitesmoke]"} flex overflow-x-scroll no-scrollbar`}>
                   {allPaths.map((paths: any, index:number)=>(
                     <>
                     {paths!==""?
-                      <Tabs filePath={paths} isActive={paths===selectedTabPath} setSelectedTabPath={setSelectedTabPath} setSeletedPath={setSeletedPath} index={index} handleRemoveTab={handleRemoveTab}/>:""
+                      <Tabs filePath={paths} isActive={paths===selectedTabPath} setSelectedTabPath={setSelectedTabPath} setSeletedPath={setSeletedPath} index={index} handleRemoveTab={handleRemoveTab} isDarkMode={isDarkMode}/>:""
                     }
                     </>
                   ))}
@@ -348,17 +352,14 @@ const Page = ({ params }: { params: { id: string } }) => {
             )}
           </div>
 
-          <div ref={termBox} className={`terminal-container relative ${selectedTabPath ? "mt-7" : ""}`} style={{ borderTop: isDarkMode ? "0.5px solid rgba(255, 255, 255, 0.4)" : "0.5px solid rgba(0, 0, 0, 0.4)" }}>
+          <div ref={termBox} className={`terminal-container relative ${selectedTabPath ? "mt-[2.1rem]" : ""}`} style={{ borderTop: isDarkMode ? "0.5px solid rgba(255, 255, 255, 0.4)" : "0.5px solid rgba(0, 0, 0, 0.4)" }}>
             <div ref={termBoxTop} className="resizer rt absolute top-0 left-0 w-full cursor-row-resize h-1 hover:h-[2px] hover:bg-orange-1 "></div>
-            <div className={`w-full ${isDarkMode ? "bg-black-3 text-white-1":"bg-white-2 text-black-1"}  flex justify-between items-center  px-5 ${showTerminal ? 'py-2' : "py-0"}`}>
+            <div className={`w-full ${isDarkMode ? "bg-black-3 text-white-1":"bg-[whitesmoke] text-black-1"}  flex justify-between items-center  px-5 ${showTerminal ? 'py-2' : "py-0"}`}>
               <p style={{ borderBottom: "0.5px solid #877EFF", fontSize: "12px", margin: "0" }}>TERMINAL</p>
               <p className={`${showTerminal ? "-mt-2" : "mt-0"} cursor-pointer`} style={{ fontSize: "20px" }} onClick={() => setShowTerminal(!showTerminal)}>{showTerminal ? '⌄' : '˄'}</p>
             </div>
-            {showTerminal ? (
-              <Terminal />
-            ) : ""}
             {showTerminal && project?(
-              <Terminal pId={project}/>
+              <Terminal pId={project} isDarkMode={isDarkMode}/>
             ):""}
           </div>
         </div>

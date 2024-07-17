@@ -19,12 +19,27 @@ html {
   border-bottom: 0.5px solid rgba(255, 255, 255, 0.4);
 }
 
+.editor-tab-light{
+  border-right: 0.5px solid rgba(0, 0, 0, 0.4);
+  border-left: 0.5px solid rgba(0, 0, 0, 0.4);
+  border-bottom: 0.5px solid rgba(0, 0, 0, 0.4);
+}
+
 .editor-tab:hover{
   border-bottom: none;
+  background-color: #55555874;
 }
 
 .editor-tab-active{
   border-bottom: none;
+  border-top: 2px solid rgba(0, 0, 255, 0.758);
+  background-color: #55555874;
+}
+
+.editor-tab-light-active{
+  border-bottom: none;
+  border-top: 2px solid rgba(0, 0, 255, 0.758);
+  background-color: white;
 }
 
 @media (prefers-color-scheme: light) {

@@ -204,7 +204,7 @@ const ws = new WebSocket(
   process.env.NEXT_PUBLIC_SOCKET_BACKEND_URL || "ws://localhost:5001"
 );
 
-const FileTreeNode = ({ fileName, nodes, onSelect, path, searchSelectedPath, setSearchResult, searchResult, pId, newFolderCreatedPath, setNewFolderCreatedPath, newFileCreatedPath, setNewFileCreatedPath }: any) => {
+const FileTreeNode = ({ fileName, nodes, onSelect, path, searchSelectedPath, setSearchResult, searchResult, pId, newFolderCreatedPath, setNewFolderCreatedPath, newFileCreatedPath, setNewFileCreatedPath, isDarkMode }: any) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [menuStyle, setMenuStyle] = useState<any>({ display: "none", top: 0, left: 0, });
   const [folderMenuStyle, setFolderMenuStyle] = useState<any>({ display: "none", top: 0, left: 0, });
@@ -214,9 +214,6 @@ const FileTreeNode = ({ fileName, nodes, onSelect, path, searchSelectedPath, set
   const [newFolderName, setNewFolderName] = useState(fileName);
   const menuRef = useRef<HTMLDivElement | null>(null);
   const folderMenuRef = useRef<HTMLDivElement | null>(null);
-  const [isDarkMode, setIsDarkMode] = useState(() =>
-    typeof window !== 'undefined' ? localStorage.getItem('theme') === 'dark' : false
-  ); {/* localstorage */}
 
 
   const isFolder = nodes !== null;
@@ -409,7 +406,7 @@ const FileTreeNode = ({ fileName, nodes, onSelect, path, searchSelectedPath, set
 
   return (
     <div
-      className={`${isDarkMode?"bg-black-3":"bg-white-1"}`}
+      className={`${isDarkMode?"bg-black-3":"bg-[whitesmoke]"}`}
       style={{ marginLeft: "17px", position: "relative" }}
       onClick={handleClick}
     >
@@ -461,6 +458,7 @@ const FileTreeNode = ({ fileName, nodes, onSelect, path, searchSelectedPath, set
                     setNewFolderCreatedPath={setNewFolderCreatedPath}
                     newFileCreatedPath={newFileCreatedPath}
                     setNewFileCreatedPath={setNewFileCreatedPath}
+                    isDarkMode={isDarkMode}
                   />
                 </li>
               ))}
@@ -582,6 +580,7 @@ const FileStructureTree = ({
   setSearchResult,
   searchResult,
   docName,
+  isDarkMode
 }: any) => {
   const [tree, setTree] = useState<any>(null);
   const [newFolderCreatedPath, setNewFolderCreatedPath] = useState<any>(null)
@@ -622,6 +621,7 @@ const FileStructureTree = ({
         setNewFolderCreatedPath={setNewFolderCreatedPath}
         newFileCreatedPath={newFileCreatedPath}
         setNewFileCreatedPath={setNewFileCreatedPath}
+        isDarkMode={isDarkMode}
       />
     </div>
   );
