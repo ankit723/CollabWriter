@@ -204,7 +204,7 @@ const ws = new WebSocket(
   process.env.NEXT_PUBLIC_SOCKET_BACKEND_URL || "ws://localhost:5001"
 );
 
-const FileTreeNode = ({ fileName, nodes, onSelect, path, searchSelectedPath, setSearchResult, searchResult, pId, newFolderCreatedPath, setNewFolderCreatedPath, newFileCreatedPath, setNewFileCreatedPath, isDarkMode }: any) => {
+const FileTreeNode = ({ fileName, nodes, onSelect, path, searchSelectedPath, setSearchResult, searchResult, pId, newFolderCreatedPath, setNewFolderCreatedPath, newFileCreatedPath, setNewFileCreatedPath, isDarkMode,bgcolor }: any) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [menuStyle, setMenuStyle] = useState<any>({ display: "none", top: 0, left: 0, });
   const [folderMenuStyle, setFolderMenuStyle] = useState<any>({ display: "none", top: 0, left: 0, });
@@ -214,7 +214,7 @@ const FileTreeNode = ({ fileName, nodes, onSelect, path, searchSelectedPath, set
   const [newFolderName, setNewFolderName] = useState(fileName);
   const menuRef = useRef<HTMLDivElement | null>(null);
   const folderMenuRef = useRef<HTMLDivElement | null>(null);
-
+  
 
   const isFolder = nodes !== null;
   const fileExtension = newFileName.split('.').pop();
@@ -406,7 +406,7 @@ const FileTreeNode = ({ fileName, nodes, onSelect, path, searchSelectedPath, set
 
   return (
     <div
-      className={`${isDarkMode?"bg-black-3":"bg-[whitesmoke]"}`}
+      className={`bg-${bgcolor}`}
       style={{ marginLeft: "17px", position: "relative" }}
       onClick={handleClick}
     >
@@ -423,7 +423,7 @@ const FileTreeNode = ({ fileName, nodes, onSelect, path, searchSelectedPath, set
                   handleFolderRename(path);
                 }
               }}
-              className={`${isDarkMode?"bg-black-3":"bg-white-1"}`}
+              className={`bg-${bgcolor}`}
               autoFocus
             />
           ) : (
@@ -480,7 +480,7 @@ const FileTreeNode = ({ fileName, nodes, onSelect, path, searchSelectedPath, set
                       handleRename(path);
                     }
                   }}
-                  className="bg-black-3"
+                  className={`bg-${bgcolor}`}
                   autoFocus
                 />
               ) : (
@@ -505,7 +505,7 @@ const FileTreeNode = ({ fileName, nodes, onSelect, path, searchSelectedPath, set
 
 <div
   ref={menuRef}
-  className={`p-1 rounded-lg w-52 ${isDarkMode ? "bg-white-3" : ""}`}
+  className={`p-1 rounded-lg w-52 bg-${bgcolor}`}
   style={{
     ...menuStyle,
     position: "fixed",
@@ -531,7 +531,7 @@ const FileTreeNode = ({ fileName, nodes, onSelect, path, searchSelectedPath, set
 
 <div
   ref={folderMenuRef}
-  className={`p-1 rounded-lg w-52 ${isDarkMode ? "bg-black-4" : "bg-white-3"}`}
+  className={`p-1 rounded-lg w-52 bg-${bgcolor}`}
   style={{
     ...folderMenuStyle,
     position: "fixed",

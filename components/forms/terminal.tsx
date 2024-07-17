@@ -3,19 +3,21 @@ import React, { useEffect, useRef, useState } from 'react'
 import { Terminal as XTerminal } from '@xterm/xterm'
 import '@xterm/xterm/css/xterm.css'
 
-const Terminal = ({ pId, isDarkMode }: any) => {
+const Terminal = ({ pId, isDarkMode ,bgcolor}: any) => {
     const [projectId, setProjectId] = useState<any>(pId)
     const terminalRef = useRef<HTMLDivElement | null>(null)
     const wsRef = useRef<WebSocket | null>(null)
     const termRef = useRef<XTerminal | null>(null)
     const [showTerminal, setShowTerminal] = useState(true)
+    const [backgroundColor, setBackgroundColor] = useState<string>(`bg-${bgcolor}`);
 
     useEffect(() => {
         setShowTerminal(false)
         setTimeout(() => {
             setShowTerminal(true)
         }, 200)
-    }, [isDarkMode])
+        setBackgroundColor(`bg-${bgcolor}`);
+    }, [isDarkMode,bgcolor])
 
     useEffect(() => {
         if (showTerminal && terminalRef.current) {
@@ -26,7 +28,7 @@ const Terminal = ({ pId, isDarkMode }: any) => {
 
             const term = new XTerminal({
                 theme: {
-                    background: isDarkMode ? "rgb(16 17 20 )" : "whitesmoke",
+                    background: backgroundColor,
                     foreground: isDarkMode ? "rgb(255, 255, 255)" : "rgb(0, 0, 0)",
                 },
                 rows: 14,
@@ -84,7 +86,7 @@ const Terminal = ({ pId, isDarkMode }: any) => {
                 wsRef.current = null
             }
         }
-    }, [projectId, isDarkMode, showTerminal])
+    }, [projectId, isDarkMode, showTerminal,bgcolor])
 
     useEffect(() => {
         setProjectId(pId)
