@@ -297,7 +297,7 @@ html {
 
 .toggle-checkbox {
   appearance: none;
-  background-color: #222222;
+  background-color: #3f60c2;
   border-radius: 9999px;
   width: 34px;
   height: 20px;
@@ -331,6 +331,19 @@ html {
   color: var(--text-color);
 }
 .theme-list {
-  background-color: black;
   color: white;
+}
+
+
+.centered-modal {
+  position: fixed;
+  top: 18%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 10000; 
+  padding: 10px; 
+  max-height: 200px; 
+  overflow-y: auto; 
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); 
+  border-radius: 8px;
 }
