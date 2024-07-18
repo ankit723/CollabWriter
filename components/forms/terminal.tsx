@@ -28,7 +28,7 @@ const Terminal = ({ pId, isDarkMode ,bgcolor}: any) => {
 
             const term = new XTerminal({
                 theme: {
-                    background: backgroundColor,
+                    background: `bg-${bgcolor}`,
                     foreground: isDarkMode ? "rgb(255, 255, 255)" : "rgb(0, 0, 0)",
                 },
                 rows: 14,
