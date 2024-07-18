@@ -7,7 +7,7 @@ import { fetchProject, updateDocumentTitleDescription } from "@/lib/actions/docu
 import Terminal from "@/components/forms/terminal";
 import FileStructureTree from "@/components/cards/fileStructureTree";
 import CodeEditor from "@/components/forms/codeEditor";
-import { useCallback, useEffect, useState, useRef } from "react";
+import { useCallback, useEffect, useState, useRef, SetStateAction } from "react";
 import { Replace } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
@@ -68,12 +68,12 @@ const Page = ({ params }: { params: { id: string } }) => {
   const [showTerminal, setShowTerminal] = useState(true);
   const [showSideBar, setShowSideBar] = useState(true);
   const [termRows, setTermRows] = useState<number>(14)
-  const [selectedTheme, setSelectedTheme] = useState<any>(localStorage.getItem('editorTheme'));
+  const [selectedTheme, setSelectedTheme] = useState(() => {
+    const savedTheme = localStorage.getItem('editorTheme');
+    return savedTheme || 'monokai';
+  });
   const [showThemeList, setShowThemeList] = useState(false);
   const [showThemeEnhancer, setShowThemeEnhancer] = useState(false);
-  const [isDarkMode, setIsDarkMode] = useState(() =>
-    typeof window !== 'undefined' ? localStorage.getItem('theme') === 'dark' : false
-  );
   const [selectedThemeEnhancer, setselectedShowThemeEnhancer] = useState<any>(() => {
     const storedEnhancer = localStorage.getItem('themeenhancer');
     if (storedEnhancer) {
@@ -81,9 +81,15 @@ const Page = ({ params }: { params: { id: string } }) => {
     }
     return isDarkMode ? 'black-1' : 'light-1';
   });
+
+  const [isDarkMode, setIsDarkMode] = useState(() =>
+    typeof window !== 'undefined' ? localStorage.getItem('theme') === 'dark' : false
+  );
   const [showThemeManager, setShowThemeManager] = useState(false);
   const [searchSelectedTheme, setSearchSeletedTheme] = useState<string>(selectedTheme);
-  const [searchSelectedThemeEnhancer, setSearchSeletedThemeEnhancer] = useState<string>(selectedTheme);
+  const [searchSelectedThemeEnhancer, setSearchSeletedThemeEnhancer] = useState<string>(selectedThemeEnhancer || "");
+
+
 
 
   const searchResultsRef = useRef<HTMLDivElement | null>(null);
@@ -91,45 +97,56 @@ const Page = ({ params }: { params: { id: string } }) => {
   const termBoxTop = useRef(null);
   const settingsRef = useRef<HTMLDivElement | null>(null);
 
-  const handleThemeChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    setSelectedTheme(event.target.value);
+  const handleThemeChange = (newTheme:string) => {
+    setSelectedTheme(newTheme);
+    localStorage.setItem('editorTheme', newTheme);
   };
+  
+
+  useEffect(() => {
+    const savedTheme = localStorage.getItem('editorTheme');
+    if (savedTheme) {
+      setSelectedTheme(savedTheme);
+    }
+  }, []);
+
 
   const handleClickOutside = (event: MouseEvent) => {
-    // if (searchResultsRef.current && !searchResultsRef.current.contains(event.target as Node)) {
-    //   setSearchSeletedPath("");
-    // }
-    // if (showThemeList && !(event.target as Element)?.closest('.theme-list, .theme-toggle')) {
-    //   setShowThemeList(false);
-    // }
-    // if (showThemeEnhancer && !(event.target as Element)?.closest('.theme-list, .theme-toggle')) {
-    //   setShowThemeEnhancer(false);
-    // }
-    // if (showThemeManager && !(event.target as Element)?.closest('.theme-list, .theme-toggle, .theme-manager')) {
-    //   setShowThemeManager(false);
-    // }
-    // if (settingsRef.current && !settingsRef.current.contains(event.target as Node)) {
-    //   setShowSetting(false);
-    // }
+    if (searchResultsRef.current && !searchResultsRef.current.contains(event.target as Node)) {
+      setSearchSeletedPath("");
+    }
+    if (showThemeList && !(event.target as Element)?.closest('.theme-list, .theme-toggle')) {
+      setShowThemeList(false);
+    }
+    if (showThemeEnhancer && !(event.target as Element)?.closest('.theme-list, .theme-toggle')) {
+      setShowThemeEnhancer(false);
+    }
+    if (showThemeManager && !(event.target as Element)?.closest('.theme-list, .theme-toggle, .theme-manager')) {
+      setShowThemeManager(false);
+    }
+    if (settingsRef.current && !settingsRef.current.contains(event.target as Node)) {
+      setShowSetting(false);
+    }
     
   };
   const handleThemeEnhancerChange = (value: string) => {
     setselectedShowThemeEnhancer(value);
     localStorage.setItem('themeenhancer', value);
   };
+
   const handleThemeEnhancerClick = (value: string) => {
     handleThemeEnhancerChange(value);
     setSearchSeletedThemeEnhancer("");
   };
 
-
   useEffect(() => {
-    const defaultEnhancer = isDarkMode ? 'black-1' : 'light-1';
-    if (!localStorage.getItem('themeenhancer')) {
-      localStorage.setItem('themeenhancer', defaultEnhancer);
-    }
-    setselectedShowThemeEnhancer(localStorage.getItem('themeenhancer') || defaultEnhancer);
+    const defaultEnhancer = isDarkMode ? 'black-1' : 'white-1';
+    const storedEnhancer = localStorage.getItem('themeenhancer') || defaultEnhancer;
+    setselectedShowThemeEnhancer(storedEnhancer);
+    localStorage.setItem('themeenhancer', storedEnhancer);
   }, [isDarkMode]);
+
+
 
   const handleShowThemeList = () => {
     setShowThemeList(true);
@@ -148,6 +165,10 @@ const Page = ({ params }: { params: { id: string } }) => {
     setShowThemeList(false);
   };
 
+  const handleThemeInputChange = (event: string) => {
+    setSelectedTheme(event);
+    localStorage.setItem('editorTheme', event);
+  };
 
   useEffect(() => {
     document.addEventListener('click', handleClickOutside);
@@ -162,6 +183,10 @@ const Page = ({ params }: { params: { id: string } }) => {
       setselectedShowThemeEnhancer(storedEnhancer);
     }
   }, []);
+  useEffect(() => {
+    const defaultEnhancer = isDarkMode ? 'black-1' : 'white-1';
+    setselectedShowThemeEnhancer(localStorage.getItem('themeenhancer') || defaultEnhancer);
+  }, [isDarkMode]);
 
 
   useEffect(() => {
@@ -180,12 +205,13 @@ const Page = ({ params }: { params: { id: string } }) => {
     } else {
       document.documentElement.setAttribute('dark-theme', 'light');
       localStorage.setItem('theme', 'light');
-      setselectedShowThemeEnhancer(localStorage.getItem('themeenhancer') || 'light-1');
+      setselectedShowThemeEnhancer(localStorage.getItem('themeenhancer') || 'white-1');
     }
   }, [isDarkMode]);
 
+
   useEffect(() => {
-    const defaultEnhancer = isDarkMode ? 'black-1' : 'light-1';
+    const defaultEnhancer = isDarkMode ? 'black-1' : 'white-1';
     if (!localStorage.getItem('themeenhancer')) {
       localStorage.setItem('themeenhancer', defaultEnhancer);
     }
@@ -203,7 +229,6 @@ const Page = ({ params }: { params: { id: string } }) => {
       setProject(cProject?.id);
       setDocName(cProject?.title);
       setDocDesc(cProject?.desc);
-      console.log(cProject.title)
     };
     fetchData();
   }, [params.id]);
@@ -314,7 +339,7 @@ const Page = ({ params }: { params: { id: string } }) => {
 
 
         <div className={`relative w-full ${selectedThemeEnhancer}`}>
-          {showThemeList && showSetting ?
+          {showThemeList  ?
             (<div className={`w-full absolute ${selectedThemeEnhancer} top-[-0.8rem] z-10 rounded-lg shadow-2xl`} style={{ border: isDarkMode?"0.5px solid rgba(255, 255, 255, 0.4)":"0.5px solid rgba(0, 0, 0, 0.5)" }}>
               <div className="relative m-2 shadow-xl" style={{ fontSize: "12px" }}>
                 <p className="absolute top-1 left-5">🔎</p>
@@ -331,6 +356,7 @@ const Page = ({ params }: { params: { id: string } }) => {
                     }
                   }}
                 />
+
               </div>
               <div className="h-80 overflow-y-scroll no-scrollbar">
                 {themes.length !== 0 && themes.map((res: string, index: number) => (
@@ -340,6 +366,7 @@ const Page = ({ params }: { params: { id: string } }) => {
                     onClick={() => {
                       setSelectedTheme(res);
                       setSearchSeletedTheme("");
+                      handleThemeChange(res)
                     }}
                   >
                     {res}
@@ -359,6 +386,7 @@ const Page = ({ params }: { params: { id: string } }) => {
                   onKeyDown={(e) => {
                     if (e.key === 'Enter') {
                       setselectedShowThemeEnhancer(searchSelectedThemeEnhancer);
+                      
                     }
                   }}
                 />
@@ -368,7 +396,7 @@ const Page = ({ params }: { params: { id: string } }) => {
                   <p
                     key={index}
                     className={`${isDarkMode ? 'text-white-1' : 'text-black-1'} cursor-pointer hover:bg-orange-1 rounded-b-lg px-5 py-1 text-small-regular`}
-                    onClick={() => handleThemeEnhancerChange(res)}
+                    onClick={() =>{ handleThemeEnhancerChange(res);}}
                   >
                     {res}
                   </p>
@@ -411,6 +439,16 @@ const Page = ({ params }: { params: { id: string } }) => {
 
 
         <div className="flex items-center justify-end space-x-4">
+          <Image
+              src={isDarkMode
+                ? "/icons/dark-theme.svg"
+                : "/icons/light-theme.svg"
+              }
+              alt="Modes"
+              className="w-4 h-4"
+              width={14}
+              height={14}
+            />
           <h3 className={`text-small-regular mr-2 ${isDarkMode ? "text-white-2" : "text-black-2"}`}>
             {isDarkMode ? "Dark Mode" : "Light Mode"}
           </h3>
@@ -422,7 +460,8 @@ const Page = ({ params }: { params: { id: string } }) => {
               setIsDarkMode(newDarkMode);
               localStorage.setItem('theme', newDarkMode ? 'dark' : 'light');
               setSelectedTheme(newDarkMode ? 'cloud9_night_low_color' : 'xcode');
-              handleThemeEnhancerChange(newDarkMode ? 'black-1' : 'light-1');
+              handleThemeChange(newDarkMode ? 'cloud9_night_low_color' : 'xcode')
+              handleThemeEnhancerChange(newDarkMode ? 'black-1' : 'white-1');
             }}
             className="toggle-checkbox"
           />
@@ -479,7 +518,7 @@ const Page = ({ params }: { params: { id: string } }) => {
         {/* <div className={`main-container flex ${isDarkMode ? "text-white-1" : "text-black-1"}`}> */}
         {/* Sidebar */}
 
-        <div className={`w-[290px] ${selectedThemeEnhancer} h-[96vh] py-3 px-3 flex flex-col ${showSideBar ? "flex" : "hidden"}`} style={{ borderRight: isDarkMode ? "0.5px solid rgba(255, 255, 255, 0.4)" : "0.5px solid rgba(0, 0, 0, 0.4)" }}>
+        <div className={`w-[290px] ${isDarkMode ? `bg-${selectedThemeEnhancer}` : 'bg-[whitesmoke]'} h-[96vh] py-3 px-3 flex flex-col ${showSideBar ? "flex" : "hidden"}`} style={{ borderRight: isDarkMode ? "0.5px solid rgba(255, 255, 255, 0.4)" : "0.5px solid rgba(0, 0, 0, 0.4)" }}>
           {/* <div className={`w-[290px] ${isDarkMode ? 'bg-black-3' : 'bg-[whitesmoke]'} h-[96vh] py-3 px-3 flex flex-col ${showSideBar ? "flex" : "hidden"}`} style={{ borderRight: isDarkMode ? "0.5px solid rgba(255, 255, 255, 0.4)" : "0.5px solid rgba(0, 0, 0, 0.4)" }}> */}
           <div className="w-full flex justify-between items-center px-4 mb-7 mt-2">
             <p className={` ${!isDarkMode ? "text-black-2" : "text-white-2"} text-small-regular m-0`}>Explorer</p>
