@@ -25,7 +25,7 @@ const config = {
           fontWeight: "600",
         },
       ],
-      "heading2-bold": [
+      "heading2-bold": [ 
         "30px",
         {
           lineHeight: "140%",
