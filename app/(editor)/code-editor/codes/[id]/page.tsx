@@ -37,11 +37,11 @@ const themes = [
   'xcode'
 ];
 const themeEnhancerLight = [
-  'light-1', 'light-2', 'light-3', 'light-4', 'white-1',
-  'white-2',
-  'white-3',
-  'white-4',
-  'white-5'
+  'light-1', 
+  'light-2', 
+  'light-3', 
+  'light-4', 
+  'white-1',
 ];
 const themeEnhancerDark = [
   'dark-1', 'dark-3', 'black-1',
@@ -71,6 +71,9 @@ const Page = ({ params }: { params: { id: string } }) => {
   const [selectedTheme, setSelectedTheme] = useState<any>(localStorage.getItem('editorTheme'));
   const [showThemeList, setShowThemeList] = useState(false);
   const [showThemeEnhancer, setShowThemeEnhancer] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(() =>
+    typeof window !== 'undefined' ? localStorage.getItem('theme') === 'dark' : false
+  );
   const [selectedThemeEnhancer, setselectedShowThemeEnhancer] = useState<any>(() => {
     const storedEnhancer = localStorage.getItem('themeenhancer');
     if (storedEnhancer) {
@@ -78,10 +81,6 @@ const Page = ({ params }: { params: { id: string } }) => {
     }
     return isDarkMode ? 'black-1' : 'light-1';
   });
-
-  const [isDarkMode, setIsDarkMode] = useState(() =>
-    typeof window !== 'undefined' ? localStorage.getItem('theme') === 'dark' : false
-  );
   const [showThemeManager, setShowThemeManager] = useState(false);
   const [searchSelectedTheme, setSearchSeletedTheme] = useState<string>(selectedTheme);
   const [searchSelectedThemeEnhancer, setSearchSeletedThemeEnhancer] = useState<string>(selectedTheme);
@@ -97,21 +96,21 @@ const Page = ({ params }: { params: { id: string } }) => {
   };
 
   const handleClickOutside = (event: MouseEvent) => {
-    if (searchResultsRef.current && !searchResultsRef.current.contains(event.target as Node)) {
-      setSearchSeletedPath("");
-    }
-    if (showThemeList && !(event.target as Element)?.closest('.theme-list, .theme-toggle')) {
-      setShowThemeList(false);
-    }
-    if (showThemeEnhancer && !(event.target as Element)?.closest('.theme-list, .theme-toggle')) {
-      setShowThemeEnhancer(false);
-    }
-    if (showThemeManager && !(event.target as Element)?.closest('.theme-list, .theme-toggle, .theme-manager')) {
-      setShowThemeManager(false);
-    }
-    if (settingsRef.current && !settingsRef.current.contains(event.target as Node)) {
-      setShowSetting(false);
-    }
+    // if (searchResultsRef.current && !searchResultsRef.current.contains(event.target as Node)) {
+    //   setSearchSeletedPath("");
+    // }
+    // if (showThemeList && !(event.target as Element)?.closest('.theme-list, .theme-toggle')) {
+    //   setShowThemeList(false);
+    // }
+    // if (showThemeEnhancer && !(event.target as Element)?.closest('.theme-list, .theme-toggle')) {
+    //   setShowThemeEnhancer(false);
+    // }
+    // if (showThemeManager && !(event.target as Element)?.closest('.theme-list, .theme-toggle, .theme-manager')) {
+    //   setShowThemeManager(false);
+    // }
+    // if (settingsRef.current && !settingsRef.current.contains(event.target as Node)) {
+    //   setShowSetting(false);
+    // }
     
   };
   const handleThemeEnhancerChange = (value: string) => {
@@ -300,8 +299,8 @@ const Page = ({ params }: { params: { id: string } }) => {
   }
 
   return (
-    <div className="custom-scrollbar w-screen">
-      <header className={`grid grid-cols-3 items-center py-1 px-8 ${isDarkMode ? `bg-${selectedThemeEnhancer} text-white-1` : 'bg-[whitesmoke] text-black-1'}`} style={{ borderBottom: isDarkMode ? '0.5px solid rgba(255, 255, 255, 0.4)' : '0.5px solid rgba(0, 0, 0, 0.4)' }}>
+    <div className={`custom-scrollbar w-screen ${selectedThemeEnhancer}`}>
+      <header className={`grid grid-cols-3 items-center py-1 px-8 ${selectedThemeEnhancer}`} style={{ borderBottom: isDarkMode ? '0.5px solid rgba(255, 255, 255, 0.4)' : '0.5px solid rgba(0, 0, 0, 0.4)' }}>
         <div className='flex cursor-pointer items-center gap-1 max-lg:justify-center'>
           <Link href="/"><Image src="/icons/logo.png" alt="Podcast Logo" width={20} height={20} /></Link>
           <div className={`${isDarkMode ? "text-white-1" : "text-black-1"} flex flex-col items-start justify-center w-full`}>
@@ -314,17 +313,17 @@ const Page = ({ params }: { params: { id: string } }) => {
 
 
 
-        <div className={`relative w-full bg-${selectedThemeEnhancer}`}>
+        <div className={`relative w-full ${selectedThemeEnhancer}`}>
           {showThemeList && showSetting ?
-            (<div className={`w-full absolute bg-${selectedThemeEnhancer} top-[-0.8rem] z-10 rounded-lg`} style={{ border: "0.5px solid rgba(255, 255, 255, 0.4)" }} ref={searchResultsRef}>
-              <div className="relative" style={{ fontSize: "12px" }}>
+            (<div className={`w-full absolute ${selectedThemeEnhancer} top-[-0.8rem] z-10 rounded-lg shadow-2xl`} style={{ border: isDarkMode?"0.5px solid rgba(255, 255, 255, 0.4)":"0.5px solid rgba(0, 0, 0, 0.5)" }}>
+              <div className="relative m-2 shadow-xl" style={{ fontSize: "12px" }}>
                 <p className="absolute top-1 left-5">🔎</p>
                 <input
                   type="text"
                   value={searchSelectedTheme}
                   placeholder={selectedTheme}
-                  className={`bg-${selectedThemeEnhancer} rounded-lg text-center w-full p-[2px]`}
-                  style={{ border: isDarkMode ? '0.5px solid rgba(255, 255, 255, 0.4)' : '0.5px solid rgba(0, 0, 0, 0.4)' }}
+                  className={`${selectedThemeEnhancer} rounded-lg text-center w-full p-[2px]`}
+                  style={{ border: isDarkMode ? '0.5px solid rgba(255, 255, 255, 0.4)' : '0.5px solid rgba(0, 0, 0, 0.4)', color: isDarkMode ? 'white' : 'black' }}
                   onChange={(e) => setSearchSeletedTheme(e.target.value)}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter') {
@@ -333,7 +332,7 @@ const Page = ({ params }: { params: { id: string } }) => {
                   }}
                 />
               </div>
-              <div className="h-40 overflow-y-scroll no-scrollbar">
+              <div className="h-80 overflow-y-scroll no-scrollbar">
                 {themes.length !== 0 && themes.map((res: string, index: number) => (
                   <p
                     key={index}
@@ -347,15 +346,15 @@ const Page = ({ params }: { params: { id: string } }) => {
                   </p>
                 ))}
               </div>
-            </div>) : showThemeEnhancer ? (<div className={`w-full absolute bg-${selectedThemeEnhancer} top-[-0.8rem] z-10 rounded-lg`} style={{ border: "0.5px solid rgba(255, 255, 255, 0.4)" }} ref={searchResultsRef}>
-              <div className="relative" style={{ fontSize: "12px" }}>
+            </div>) : showThemeEnhancer ? (<div className={`w-full absolute ${selectedThemeEnhancer} top-[-0.8rem] z-10 rounded-lg shadow-2xl`} style={{ border: isDarkMode?"0.5px solid rgba(255, 255, 255, 0.4)":"0.5px solid rgba(0, 0, 0, 0.5)" }}>
+              <div className="relative m-2 shadow-xl" style={{ fontSize: "12px" }}>
                 <p className="absolute top-1 left-5">🔎</p>
                 <input
                   type="text"
                   value={searchSelectedThemeEnhancer}
                   placeholder={selectedThemeEnhancer}
-                  className={`bg-${selectedThemeEnhancer} rounded-lg text-center w-full p-[2px]`}
-                  style={{ border: isDarkMode ? '0.5px solid rgba(255, 255, 255, 0.4)' : '0.5px solid rgba(0, 0, 0, 0.4)' }}
+                  className={`${selectedThemeEnhancer} rounded-lg text-center w-full p-[2px]`}
+                  style={{ border: isDarkMode ? '0.5px solid rgba(255, 255, 255, 0.4)' : '0.5px solid rgba(0, 0, 0, 0.4)', color: isDarkMode ? 'white' : 'black' }}
                   onChange={(e) => setSearchSeletedThemeEnhancer(e.target.value)}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter') {
@@ -377,15 +376,15 @@ const Page = ({ params }: { params: { id: string } }) => {
               </div>
             </div>
             ) : (
-              <div className={`w-full absolute bg-${selectedThemeEnhancer} top-[-0.8rem] z-10 rounded-lg`} style={{ border: "0.5px solid rgba(255, 255, 255, 0.4)" }} ref={searchResultsRef}>
+              <div className={`w-full absolute ${selectedThemeEnhancer} top-[-0.8rem] z-10 rounded-lg shadow-2xl`} style={{ border: isDarkMode?"0.5px solid rgba(255, 255, 255, 0.4)":"0.5px solid rgba(0, 0, 0, 0.5)" }} ref={searchResultsRef}>
                 <div className="relative" style={{ fontSize: "12px" }}>
                   <p className="absolute top-1 left-5">🔎</p>
                   <input
                     type="text"
                     value={searchSelectedPath}
                     placeholder={selectedPath}
-                    className={`bg-${selectedThemeEnhancer} rounded-lg text-center w-full p-[2px]`}
-                    style={{ border: isDarkMode ? '0.5px solid rgba(255, 255, 255, 0.4)' : '0.5px solid rgba(0, 0, 0, 0.4)' }}
+                    className={`${selectedThemeEnhancer} rounded-lg text-center w-full p-[2px]`}
+                    style={{color: isDarkMode ? 'white' : 'black' }}
                     onChange={(e) => setSearchSeletedPath(e.target.value)}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') {
@@ -441,32 +440,30 @@ const Page = ({ params }: { params: { id: string } }) => {
               height={14}
             />
             {showSetting && (
-              <div className={`themesetting absolute right-0 top-5 bg-${selectedThemeEnhancer} border border-gray-300 shadow-2xl p-4 rounded-md z-50 w-[200px]`}>
-                <p className="text-small-medium font-semibold mb-2" onClick={handleThemeManagerClick}>{showThemeManager ? ">" : "<"} Manage Themes</p>
+              <div className={`themesetting ${isDarkMode?"text-white-3":"text-black-1"} absolute right-0 top-8 border border-black-3 shadow-2xl px-1 py-1 rounded-md z-50 right-clicks-modals w-[200px]`} style={{color:"whitesmoke"}}>
+                <p className="text-small-regular cursor-pointer px-2 hover:bg-orange-1 hover:text-white-1 rounded-sm" onClick={handleThemeManagerClick}>{showThemeManager ? ">" : "<"} Manage Themes</p>
                 {showThemeManager && (
-                  // <div className={` text-small-medium themesetting absolute left-[-200px] mr-1 top-0 border bg-${selectedThemeEnhancer} border-gray-300 shadow-lg p-2 rounded-md z-50 w-[200px] max-h-[300px] overflow-y-scroll custom-scrollbar ${isDarkMode ? "text-white-1" : " text-dark-1"}`}>
-                  <div
-  className={`themesetting absolute top-0 left-[-200px] bg-${selectedThemeEnhancer} border border-gray-300 p-2 rounded-md w-[200px] max-h-[300px] overflow-y-scroll no-scrollbar`}
->
+                  // <div className={` text-small-medium themesetting absolute left-[-200px] mr-1 top-0 border ${selectedThemeEnhancer} border-gray-300 shadow-lg p-2 rounded-md z-50 w-[200px] max-h-[300px] overflow-y-scroll custom-scrollbar ${isDarkMode ? "text-white-1" : " text-dark-1"}`}>
+                  <div className={`themesetting ${isDarkMode?"text-white-3":"text-black-1"} absolute top-2 right-clicks-modals left-[-200px] border border-gray-300 px-1 py-1 rounded-md w-[200px] max-h-[300px] overflow-y-scroll no-scrollbar shadow-2xl`} style={{ color:"whitesmoke"}}>
                 
-                    <p className="border-b-2 text-small-medium" onClick={() => setShowThemeList(!showThemeList)}>Editor Theme</p>
+                    <p className="text-small-regular cursor-pointer px-2 py-1/2 hover:bg-orange-1 hover:text-white-1 mb-1 rounded-sm" onClick={() => setShowThemeList(!showThemeList)}>Editor Theme</p>
                     {/* <div className="theme-toggle bg-orange-1 px-2 rounded-lg cursor-pointer border-b-2 mb-2" onClick={() => setShowThemeList(!showThemeList)}>
                       {selectedTheme}
                     </div> */}
 
-                    <p className="border-t-1 border-b-2 text-small-medium mt-1" onClick={() => setShowThemeEnhancer(!showThemeEnhancer)}>Theme Enhancer</p>
+                    <p className="text-small-regular cursor-pointer px-2 py-1/2 hover:bg-orange-1 hover:text-white-1 rounded-sm" onClick={() => setShowThemeEnhancer(!showThemeEnhancer)}>Product Theme</p>
                     {/* <div
                       className={`theme-toggle bg-orange-1 px-2 rounded-lg cursor-pointer border-b-2 mb-2  `}
                       
                     >
                       {selectedThemeEnhancer}
                     </div> */}
-                    <div className="w-full flex justify-end items-center">
+                    {/* <div className="w-full flex justify-end items-center">
                       <button className="bg-orange-1 mt-4 px-2 rounded-lg" onClick={() => {
                         localStorage.setItem('editorTheme', selectedTheme);
                         setShowSetting(!showSetting);
                       }}>Save</button>
-                    </div>
+                    </div> */}
                   </div>
                 )}
               </div>
@@ -477,12 +474,12 @@ const Page = ({ params }: { params: { id: string } }) => {
 
 
 
-      <div className={`main-container flex ${isDarkMode ? "text-white-1" : "text-black-1"} ${selectedThemeEnhancer ? `bg-${selectedThemeEnhancer}` : ""}`}>
+      <div className={`main-container flex ${isDarkMode ? "text-white-1" : "text-black-1"} ${selectedThemeEnhancer ? `${selectedThemeEnhancer}` : ""}`}>
 
         {/* <div className={`main-container flex ${isDarkMode ? "text-white-1" : "text-black-1"}`}> */}
         {/* Sidebar */}
 
-        <div className={`w-[290px] ${isDarkMode ? `bg-${selectedThemeEnhancer}` : 'bg-[whitesmoke]'} h-[96vh] py-3 px-3 flex flex-col ${showSideBar ? "flex" : "hidden"}`} style={{ borderRight: isDarkMode ? "0.5px solid rgba(255, 255, 255, 0.4)" : "0.5px solid rgba(0, 0, 0, 0.4)" }}>
+        <div className={`w-[290px] ${selectedThemeEnhancer} h-[96vh] py-3 px-3 flex flex-col ${showSideBar ? "flex" : "hidden"}`} style={{ borderRight: isDarkMode ? "0.5px solid rgba(255, 255, 255, 0.4)" : "0.5px solid rgba(0, 0, 0, 0.4)" }}>
           {/* <div className={`w-[290px] ${isDarkMode ? 'bg-black-3' : 'bg-[whitesmoke]'} h-[96vh] py-3 px-3 flex flex-col ${showSideBar ? "flex" : "hidden"}`} style={{ borderRight: isDarkMode ? "0.5px solid rgba(255, 255, 255, 0.4)" : "0.5px solid rgba(0, 0, 0, 0.4)" }}> */}
           <div className="w-full flex justify-between items-center px-4 mb-7 mt-2">
             <p className={` ${!isDarkMode ? "text-black-2" : "text-white-2"} text-small-regular m-0`}>Explorer</p>
@@ -511,10 +508,10 @@ const Page = ({ params }: { params: { id: string } }) => {
         {/* CodeContainer */}
 
         <div className="code-container w-full flex flex-col justify-between h-[96vh]">
-          <div className={`h-full editor bg-${selectedThemeEnhancer}`}>
+          <div className={`h-full editor ${selectedThemeEnhancer}`}>
             {selectedTabPath && (
               <div className="h-full">
-                <div className={`tabs-section w-[100%] bg-${selectedThemeEnhancer} flex overflow-x-scroll no-scrollbar`}>
+                <div className={`tabs-section w-[100%] ${selectedThemeEnhancer} flex overflow-x-scroll no-scrollbar`}>
                   {allPaths.map((paths: any, index: number) => (
                     <>
                       {paths !== "" ?
@@ -532,7 +529,7 @@ const Page = ({ params }: { params: { id: string } }) => {
 
           <div ref={termBox} className={`terminal-container relative ${selectedTabPath ? "mt-8" : ""}`} style={{ borderTop: isDarkMode ? "0.5px solid rgba(255, 255, 255, 0.4)" : "0.5px solid rgba(0, 0, 0, 0.4)" }}>
             <div ref={termBoxTop} className="resizer rt absolute top-0 left-0 w-full cursor-row-resize h-1 hover:h-[2px] hover:bg-orange-1 "></div>
-            <div className={`w-full ${isDarkMode ? "bg-black-3 text-white-1" : "bg-[whitesmoke] text-black-1"}  flex justify-between items-center  px-5 ${showTerminal ? 'py-2' : "py-0"}`}>
+            <div className={`w-full ${isDarkMode ? "bg-black-3 text-white-1" : "bg-[whitesmoke] text-black-1"} ${selectedThemeEnhancer}  flex justify-between items-center  px-5 ${showTerminal ? 'py-2' : "py-0"}`}>
               <p style={{ borderBottom: "0.5px solid #877EFF", fontSize: "12px", margin: "0" }}>TERMINAL</p>
               <p className={`${showTerminal ? "-mt-2" : "mt-0"} cursor-pointer`} style={{ fontSize: "20px" }} onClick={() => setShowTerminal(!showTerminal)}>{showTerminal ? '⌄' : '˄'}</p>
             </div>

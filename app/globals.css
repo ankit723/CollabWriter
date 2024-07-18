@@ -64,6 +64,30 @@ html {
 }
 
 @layer utilities {
+  .light-1 { @apply bg-light-1; }
+  .light-2 { @apply bg-light-2; }
+  .light-3 { @apply bg-light-3; }
+  .light-4 { @apply bg-light-4; }
+  .white-1 { @apply bg-white-1; }
+  .white-2 { @apply bg-white-2; }
+  .white-3 { @apply bg-white-3; }
+  .white-4 { @apply bg-white-4; }
+  .white-5 { @apply bg-white-5; }
+
+  .dark-1 { @apply bg-dark-1; }
+  .dark-3 { @apply bg-dark-3; }
+  .black-1 { @apply bg-black-1; }
+  .black-2 { @apply bg-black-2; }
+  .black-3 { @apply bg-black-3; }
+  .black-4 { @apply bg-black-4; }
+  .black-5 { @apply bg-black-5; }
+  .black-6 { @apply bg-black-6; }
+  .black-7 { @apply bg-black-7; }
+
+  .right-clicks-modals{
+    background-color: rgb(43, 50, 70);
+    font-weight: lighter !important;
+  }
   
   .no-focus {
     @apply focus-visible:ring-0 focus-visible:ring-transparent focus-visible:ring-offset-0 !important;

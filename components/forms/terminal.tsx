@@ -3,20 +3,43 @@ import React, { useEffect, useRef, useState } from 'react'
 import { Terminal as XTerminal } from '@xterm/xterm'
 import '@xterm/xterm/css/xterm.css'
 
+const themeMap:any={
+    "light-1": "#FFFFFF",
+    "light-2": "#EFEFEF",
+    "light-3": "#7878A3",
+    "light-4": "#5C5C7B",
+    "gray-1": "#697C89",
+    'white-1': "#FFFFFF",
+    'white-2':"rgba(255, 255, 255, 0.72)",
+    'white-3':"rgba(255, 255, 255, 0.4)",
+    'white-4':"rgba(255, 255, 255, 0.64)",
+    'white-5':"rgba(255, 255, 255, 0.80)",
+    "dark-1": "#222831",
+    "dark-2": "#2c3139",
+    "dark-3": "#344955",
+    "dark-4": "#1F1F22",
+    "black-1": "#15171C",
+    "black-2": "#222429",
+    "black-3": "#101114",
+    "black-4": "#252525",
+    "black-5": "#2E3036",
+    "black-6": "#24272C",
+    "black-7": "rgb(24, 24, 24)",
+}
+
 const Terminal = ({ pId, isDarkMode ,bgcolor}: any) => {
     const [projectId, setProjectId] = useState<any>(pId)
     const terminalRef = useRef<HTMLDivElement | null>(null)
     const wsRef = useRef<WebSocket | null>(null)
     const termRef = useRef<XTerminal | null>(null)
     const [showTerminal, setShowTerminal] = useState(true)
-    const [backgroundColor, setBackgroundColor] = useState<string>(`bg-${bgcolor}`);
 
     useEffect(() => {
+        console.log(bgcolor)
         setShowTerminal(false)
         setTimeout(() => {
             setShowTerminal(true)
         }, 200)
-        setBackgroundColor(`bg-${bgcolor}`);
     }, [isDarkMode,bgcolor])
 
     useEffect(() => {
@@ -28,8 +51,11 @@ const Terminal = ({ pId, isDarkMode ,bgcolor}: any) => {
 
             const term = new XTerminal({
                 theme: {
-                    background: backgroundColor,
-                    foreground: isDarkMode ? "rgb(255, 255, 255)" : "rgb(0, 0, 0)",
+                    background: themeMap[bgcolor],
+                    foreground: isDarkMode ? "#FFFFFF" : "#000000",
+                    cursor: isDarkMode ? "#FFFFFF" : "#000000",
+                    selectionBackground: isDarkMode ? "#FFFFFF3d" : "#0000003d",
+                    selectionForeground: isDarkMode ? "#FFFFFF3d" : "#0000003d",
                 },
                 rows: 14,
                 cols: 88,
