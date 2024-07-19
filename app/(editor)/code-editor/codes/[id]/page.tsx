@@ -86,9 +86,11 @@ const Page = ({ params }: { params: { id: string } }) => {
     typeof window !== 'undefined' ? localStorage.getItem('theme') === 'dark' : false
   );
   const [showThemeManager, setShowThemeManager] = useState(false);
-  const [searchSelectedTheme, setSearchSeletedTheme] = useState<string>(selectedTheme);
-  const [searchSelectedThemeEnhancer, setSearchSeletedThemeEnhancer] = useState<string>(selectedThemeEnhancer || "");
-
+  const [searchSelectedTheme, setSearchSeletedTheme] = useState<string>("");
+  const [searchSelectedThemeEnhancer, setSearchSeletedThemeEnhancer] = useState<string>( "");
+  const [searchInput, setSearchInput] = useState("");
+  const [filteredThemes, setFilteredThemes] = useState(themes);
+  
 
 
 
@@ -115,10 +117,10 @@ const Page = ({ params }: { params: { id: string } }) => {
     if (searchResultsRef.current && !searchResultsRef.current.contains(event.target as Node)) {
       setSearchSeletedPath("");
     }
-    if (showThemeList && !(event.target as Element)?.closest('.theme-list, .theme-toggle')) {
+    if (showThemeList && !(event.target as Element)?.closest('.theme-list, .theme-toggle,.themeinput')) {
       setShowThemeList(false);
     }
-    if (showThemeEnhancer && !(event.target as Element)?.closest('.theme-list, .theme-toggle')) {
+    if (showThemeEnhancer && !(event.target as Element)?.closest('.theme-list, .theme-toggle, .themeinput')) {
       setShowThemeEnhancer(false);
     }
     if (showThemeManager && !(event.target as Element)?.closest('.theme-list, .theme-toggle, .theme-manager')) {
@@ -159,7 +161,14 @@ const Page = ({ params }: { params: { id: string } }) => {
   };
 
 
-
+  const handleSearchInputChange = (e:any) => {
+    const query = e.target.value.toLowerCase();
+    setSearchInput(query);
+  
+    const filtered = themes.filter(theme => theme.toLowerCase().includes(query));
+    setFilteredThemes(filtered);
+  };
+  
   const handleThemeManagerClick = () => {
     setShowThemeManager(!showThemeManager);
     setShowThemeList(false);
@@ -236,8 +245,8 @@ const Page = ({ params }: { params: { id: string } }) => {
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
-        (showThemeList && !(event.target as Element)?.closest('.theme-list, .theme-toggle')) ||
-        (showThemeEnhancer && !(event.target as Element)?.closest('.theme-enhancer, .theme-toggle')) ||
+        (showThemeList && !(event.target as Element)?.closest('.theme-list, .theme-toggle, .themeinput')) ||
+        (showThemeEnhancer && !(event.target as Element)?.closest('.theme-enhancer, .theme-toggle, .themeinput')) ||
         (showThemeManager && !(event.target as Element)?.closest('.theme-list, .theme-toggle, .theme-manager'))
       ) {
         setShowThemeList(false);
@@ -319,9 +328,26 @@ const Page = ({ params }: { params: { id: string } }) => {
     }
   };
 
+  useEffect(() => {
+    if (!allPaths.includes(selectedPath)) {
+      setAllPaths([...allPaths, selectedPath]);
+    }
+    setSelectedTabPath(selectedPath);
+  }, [selectedPath]);
+
+  useEffect(() => {
+    setSelectedTabPath(allPaths[allPaths.length - 1]);
+  }, [allPaths]);
+
   const handleRemoveTab = (index: number) => {
-    allPaths.splice(index, 1)
-  }
+    const newPaths = allPaths.filter((_, i) => i !== index);
+    setAllPaths(newPaths);
+    if (newPaths.length > 0) {
+      setSelectedTabPath(newPaths[newPaths.length - 1]);
+    } else {
+      setSelectedTabPath(null);
+    }
+  };
 
   return (
     <div className={`custom-scrollbar w-screen ${selectedThemeEnhancer}`}>
@@ -340,45 +366,45 @@ const Page = ({ params }: { params: { id: string } }) => {
 
         <div className={`relative w-full ${selectedThemeEnhancer}`}>
           {showThemeList  ?
-            (<div className={`w-full absolute ${selectedThemeEnhancer} top-[-0.8rem] z-10 rounded-lg shadow-2xl`} style={{ border: isDarkMode?"0.5px solid rgba(255, 255, 255, 0.4)":"0.5px solid rgba(0, 0, 0, 0.5)" }}>
+            (<div className={`w-full absolute ${selectedThemeEnhancer} top-[-0.8rem] z-10 rounded-lg shadow-2xl`} style={{ border: isDarkMode?"0.5px solid rgba(255, 255, 255, 0.4)":"0.5px solid rgba(0, 0, 0, 0.5)" }} ref={searchResultsRef}>
               <div className="relative m-2 shadow-xl" style={{ fontSize: "12px" }}>
                 <p className="absolute top-1 left-5">🔎</p>
                 <input
                   type="text"
-                  value={searchSelectedTheme}
+                  // value={searchSelectedTheme}
                   placeholder={selectedTheme}
-                  className={`${selectedThemeEnhancer} rounded-lg text-center w-full p-[2px]`}
+                  className={`${selectedThemeEnhancer} themeinput rounded-lg text-center w-full p-[2px]`}
                   style={{ border: isDarkMode ? '0.5px solid rgba(255, 255, 255, 0.4)' : '0.5px solid rgba(0, 0, 0, 0.4)', color: isDarkMode ? 'white' : 'black' }}
-                  onChange={(e) => setSearchSeletedTheme(e.target.value)}
+                  onChange={(e) => { setSearchSeletedTheme(e.target.value); }}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter') {
                       setSelectedTheme(searchSelectedTheme);
                     }
                   }}
                 />
-
               </div>
-              <div className="h-80 overflow-y-scroll no-scrollbar">
-                {themes.length !== 0 && themes.map((res: string, index: number) => (
+              <div className="max-h-80 overflow-y-scroll no-scrollbar">
+                {themes.length !== 0 && themes.filter((res) => res.toLowerCase().includes(searchSelectedTheme.toLowerCase())).map((res: string, index: number) => (
                   <p
                     key={index}
                     className={`${isDarkMode ? 'text-white-1' : 'text-black-1'} cursor-pointer hover:bg-orange-1 rounded-b-lg px-5 py-1 text-small-regular`}
                     onClick={() => {
                       setSelectedTheme(res);
                       setSearchSeletedTheme("");
-                      handleThemeChange(res)
+                      handleThemeChange(res);
                     }}
                   >
                     {res}
                   </p>
                 ))}
               </div>
-            </div>) : showThemeEnhancer ? (<div className={`w-full absolute ${selectedThemeEnhancer} top-[-0.8rem] z-10 rounded-lg shadow-2xl`} style={{ border: isDarkMode?"0.5px solid rgba(255, 255, 255, 0.4)":"0.5px solid rgba(0, 0, 0, 0.5)" }}>
+            </div>
+            ) : showThemeEnhancer ? (<div className={`w-full absolute ${selectedThemeEnhancer} themeinput top-[-0.8rem] z-10 rounded-lg shadow-2xl`} style={{ border: isDarkMode?"0.5px solid rgba(255, 255, 255, 0.4)":"0.5px solid rgba(0, 0, 0, 0.5)" }} ref={searchResultsRef}>
               <div className="relative m-2 shadow-xl" style={{ fontSize: "12px" }}>
                 <p className="absolute top-1 left-5">🔎</p>
                 <input
                   type="text"
-                  value={searchSelectedThemeEnhancer}
+                  // value={searchSelectedThemeEnhancer}
                   placeholder={selectedThemeEnhancer}
                   className={`${selectedThemeEnhancer} rounded-lg text-center w-full p-[2px]`}
                   style={{ border: isDarkMode ? '0.5px solid rgba(255, 255, 255, 0.4)' : '0.5px solid rgba(0, 0, 0, 0.4)', color: isDarkMode ? 'white' : 'black' }}
@@ -391,8 +417,8 @@ const Page = ({ params }: { params: { id: string } }) => {
                   }}
                 />
               </div>
-              <div className="h-40 overflow-y-scroll no-scrollbar">
-                {(!isDarkMode ? themeEnhancerLight : themeEnhancerDark).map((res: string, index: number) => (
+              <div className="max-h-40 overflow-y-scroll no-scrollbar">
+                {(!isDarkMode ? themeEnhancerLight : themeEnhancerDark).filter((res)=>res.toLowerCase().includes(searchSelectedThemeEnhancer.toLowerCase())).map((res: string, index: number) => (
                   <p
                     key={index}
                     className={`${isDarkMode ? 'text-white-1' : 'text-black-1'} cursor-pointer hover:bg-orange-1 rounded-b-lg px-5 py-1 text-small-regular`}
@@ -482,27 +508,14 @@ const Page = ({ params }: { params: { id: string } }) => {
               <div className={`themesetting ${isDarkMode?"text-white-3":"text-black-1"} absolute right-0 top-8 border border-black-3 shadow-2xl px-1 py-1 rounded-md z-50 right-clicks-modals w-[200px]`} style={{color:"whitesmoke"}}>
                 <p className="text-small-regular cursor-pointer px-2 hover:bg-orange-1 hover:text-white-1 rounded-sm" onClick={handleThemeManagerClick}>{showThemeManager ? ">" : "<"} Manage Themes</p>
                 {showThemeManager && (
-                  // <div className={` text-small-medium themesetting absolute left-[-200px] mr-1 top-0 border ${selectedThemeEnhancer} border-gray-300 shadow-lg p-2 rounded-md z-50 w-[200px] max-h-[300px] overflow-y-scroll custom-scrollbar ${isDarkMode ? "text-white-1" : " text-dark-1"}`}>
+                 
                   <div className={`themesetting ${isDarkMode?"text-white-3":"text-black-1"} absolute top-2 right-clicks-modals left-[-200px] border border-gray-300 px-1 py-1 rounded-md w-[200px] max-h-[300px] overflow-y-scroll no-scrollbar shadow-2xl`} style={{ color:"whitesmoke"}}>
                 
                     <p className="text-small-regular cursor-pointer px-2 py-1/2 hover:bg-orange-1 hover:text-white-1 mb-1 rounded-sm" onClick={() => setShowThemeList(!showThemeList)}>Editor Theme</p>
-                    {/* <div className="theme-toggle bg-orange-1 px-2 rounded-lg cursor-pointer border-b-2 mb-2" onClick={() => setShowThemeList(!showThemeList)}>
-                      {selectedTheme}
-                    </div> */}
+                    
 
                     <p className="text-small-regular cursor-pointer px-2 py-1/2 hover:bg-orange-1 hover:text-white-1 rounded-sm" onClick={() => setShowThemeEnhancer(!showThemeEnhancer)}>Product Theme</p>
-                    {/* <div
-                      className={`theme-toggle bg-orange-1 px-2 rounded-lg cursor-pointer border-b-2 mb-2  `}
-                      
-                    >
-                      {selectedThemeEnhancer}
-                    </div> */}
-                    {/* <div className="w-full flex justify-end items-center">
-                      <button className="bg-orange-1 mt-4 px-2 rounded-lg" onClick={() => {
-                        localStorage.setItem('editorTheme', selectedTheme);
-                        setShowSetting(!showSetting);
-                      }}>Save</button>
-                    </div> */}
+                    
                   </div>
                 )}
               </div>
@@ -515,11 +528,11 @@ const Page = ({ params }: { params: { id: string } }) => {
 
       <div className={`main-container flex ${isDarkMode ? "text-white-1" : "text-black-1"} ${selectedThemeEnhancer ? `${selectedThemeEnhancer}` : ""}`}>
 
-        {/* <div className={`main-container flex ${isDarkMode ? "text-white-1" : "text-black-1"}`}> */}
+       
         {/* Sidebar */}
 
-        <div className={`w-[290px] ${isDarkMode ? `bg-${selectedThemeEnhancer}` : 'bg-[whitesmoke]'} h-[96vh] py-3 px-3 flex flex-col ${showSideBar ? "flex" : "hidden"}`} style={{ borderRight: isDarkMode ? "0.5px solid rgba(255, 255, 255, 0.4)" : "0.5px solid rgba(0, 0, 0, 0.4)" }}>
-          {/* <div className={`w-[290px] ${isDarkMode ? 'bg-black-3' : 'bg-[whitesmoke]'} h-[96vh] py-3 px-3 flex flex-col ${showSideBar ? "flex" : "hidden"}`} style={{ borderRight: isDarkMode ? "0.5px solid rgba(255, 255, 255, 0.4)" : "0.5px solid rgba(0, 0, 0, 0.4)" }}> */}
+        <div className={`w-[290px] ${selectedThemeEnhancer} h-[96vh] py-3 px-3 flex flex-col ${showSideBar ? "flex" : "hidden"}`} style={{ borderRight: isDarkMode ? "0.5px solid rgba(255, 255, 255, 0.4)" : "0.5px solid rgba(0, 0, 0, 0.4)" }}>
+          
           <div className="w-full flex justify-between items-center px-4 mb-7 mt-2">
             <p className={` ${!isDarkMode ? "text-black-2" : "text-white-2"} text-small-regular m-0`}>Explorer</p>
             <Image src={isDarkMode ? '/icons/hamburger.svg' : '/icons/dark-hamburger.svg'} alt="hamburger" width={25} height={25} className={` ${isDarkMode ? "hover:bg-white-2" : "hover:bg-gray-50"} rounded-full cursor-pointer p-1`} onClick={() => setShowSideBar(!showSideBar)} />
@@ -554,7 +567,7 @@ const Page = ({ params }: { params: { id: string } }) => {
                   {allPaths.map((paths: any, index: number) => (
                     <>
                       {paths !== "" ?
-                        <Tabs filePath={paths} isActive={paths === selectedTabPath} setSelectedTabPath={setSelectedTabPath} setSeletedPath={setSeletedPath} index={index} handleRemoveTab={handleRemoveTab} isDarkMode={isDarkMode} /> : ""
+                        <Tabs filePath={paths} isActive={paths === selectedTabPath} setSelectedTabPath={setSelectedTabPath} setSeletedPath={setSeletedPath} index={index} handleRemoveTab={handleRemoveTab} isDarkMode={isDarkMode} bgcolor={selectedThemeEnhancer}/> : ""
                       }
                     </>
                   ))}
@@ -568,7 +581,7 @@ const Page = ({ params }: { params: { id: string } }) => {
 
           <div ref={termBox} className={`terminal-container relative ${selectedTabPath ? "mt-8" : ""}`} style={{ borderTop: isDarkMode ? "0.5px solid rgba(255, 255, 255, 0.4)" : "0.5px solid rgba(0, 0, 0, 0.4)" }}>
             <div ref={termBoxTop} className="resizer rt absolute top-0 left-0 w-full cursor-row-resize h-1 hover:h-[2px] hover:bg-orange-1 "></div>
-            <div className={`w-full ${isDarkMode ? "bg-black-3 text-white-1" : "bg-[whitesmoke] text-black-1"} ${selectedThemeEnhancer}  flex justify-between items-center  px-5 ${showTerminal ? 'py-2' : "py-0"}`}>
+            <div className={`w-full ${isDarkMode ? " text-white-1" : " text-black-1"} ${selectedThemeEnhancer}  flex justify-between items-center  px-5 ${showTerminal ? 'py-2' : "py-0"}`}>
               <p style={{ borderBottom: "0.5px solid #877EFF", fontSize: "12px", margin: "0" }}>TERMINAL</p>
               <p className={`${showTerminal ? "-mt-2" : "mt-0"} cursor-pointer`} style={{ fontSize: "20px" }} onClick={() => setShowTerminal(!showTerminal)}>{showTerminal ? '⌄' : '˄'}</p>
             </div>
