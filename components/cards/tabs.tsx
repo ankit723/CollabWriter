@@ -1,6 +1,6 @@
 import React from 'react'
 
-const Tabs = ({filePath, isActive, setSelectedTabPath, setSeletedPath, index, handleRemoveTab, isDarkMode}:any) => {
+const Tabs = ({filePath, isActive, setSelectedTabPath, setSeletedPath, index, handleRemoveTab, isDarkMode,bgcolor}:any) => {
     const fileName=filePath.split('/').pop()
     const iconMapping: { [key: string]: string }= {
       js: 'devicon-javascript-plain colored',
@@ -199,12 +199,12 @@ const Tabs = ({filePath, isActive, setSelectedTabPath, setSeletedPath, index, ha
       zig: 'devicon-devicon-plain colored', 
     };
   return (
-    <div className={` w-full ${isDarkMode?"editor-tab":"editor-tab-light"} ${isActive?isDarkMode?'editor-tab-active':"editor-tab-light-active":""} px-2 py-[6px] cursor-pointer text-small-regular flex justify-between items-center`} onClick={()=>{setSelectedTabPath(filePath); setSeletedPath(filePath)}}>
+    <div className={` w-full bg-${bgcolor} ${isActive?isDarkMode?'editor-tab-active':"editor-tab-light-active":""} px-2 py-[6px] cursor-pointer text-small-regular flex justify-between items-center`} onClick={()=>{setSelectedTabPath(filePath); setSeletedPath(filePath)}}>
       <div className="flex justify-between items-center gap-2">
         <i className={iconMapping[fileName.split(".").pop() as string]}></i>  {fileName}
       </div>
-      <div className="hover:bg-white-2 rounded-full hover:text-black-1 px-[6px] cursor-pointer" onClick={()=>handleRemoveTab(index)}>×</div>
-    </div>
+      <div className="hover:bg-white-2 rounded-full hover:text-black-1 px-[6px] cursor-pointer" onClick={(e) => { e.stopPropagation(); handleRemoveTab(index); }}>×</div>
+    </div> 
   )
 }
 
