@@ -1,6 +1,6 @@
 'use client'
 import Image from 'next/image'
-import React, {useState, useEffect} from 'react'
+import React, {useState, useEffect,useRef} from 'react'
 import { Input } from '../ui/input'
 import { deleteDocument, updateDocumentPermission, updateDocumentTitleDescription } from '@/lib/actions/document.action'
 import { Label } from '../ui/label'
@@ -16,6 +16,7 @@ const TextDocCardOptions = ({doc_id, titleProp, descriptionProp, accessEmailsPro
   const [title, setTitle]=useState<string>(titleProp)
   const [description, setDescription]=useState<string>(descriptionProp)
   const [accessEmails, setAccessEmails]=useState<string[]>(accessEmailsProp)
+  const modalRef = useRef(null);
   const notify = (notification: string) => toast(notification)
   const handleInput=(e:any)=>{
     console.log(input)
@@ -59,6 +60,21 @@ const TextDocCardOptions = ({doc_id, titleProp, descriptionProp, accessEmailsPro
     setDescription(e.target.value)
     await updateDocumentTitleDescription(doc_id, title, description)
   }
+
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (modalRef.current && !modalRef.current.contains(event.target as Node)) {
+        setOpenHandleModal(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
   
 
   return (
@@ -69,7 +85,7 @@ const TextDocCardOptions = ({doc_id, titleProp, descriptionProp, accessEmailsPro
       </div>
 
       {openHandleModal&&(
-        <div className="absolute top-[66%] right-[53%] z-10 flex flex-col justify-center items-center bg-dark-1 text-white-2 shadow-xl cursor-pointer w-[15rem] rounded-lg" >
+        <div className="absolute top-[66%] right-[53%] z-10 flex flex-col justify-center items-center bg-dark-1 text-white-2 shadow-xl cursor-pointer w-[15rem] rounded-lg" ref={modalRef}>
           <div className="w-full rounded-lg hover:bg-dark-3 mb-1 p-2 flex gap-4" onClick={()=>setHandleOpenOptionModal(!handleOpenOptionModal)}> <Image src="/icons/discover.svg" width={17} height={17} alt='manage access'/> Manage Access</div>
           <div className="w-full rounded-lg hover:bg-dark-3 my-1 p-2 flex gap-4" onClick={handleRemoveDoc}> <Image src="/icons/delete.svg" width={17} height={17} alt='Remove'/> Remove</div>
           <div className="w-full rounded-lg hover:bg-dark-3 mt-1 p-2 flex gap-4" onClick={()=>setHandleOpenRenameModal(!handleOpenRenameModal)}> <Image src="/icons/edit.svg" width={17} height={17} alt='Rename'/> Rename</div>

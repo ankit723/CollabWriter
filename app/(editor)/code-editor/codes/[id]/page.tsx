@@ -13,6 +13,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { Input } from "@/components/ui/input";
 import Tabs from "@/components/cards/tabs";
+import { AnyCnameRecord } from "dns";
 
 const ws = new WebSocket(
   process.env.NEXT_PUBLIC_SOCKET_BACKEND_URL || "ws://localhost:5001"
@@ -37,10 +38,10 @@ const themes = [
   'xcode'
 ];
 const themeEnhancerLight = [
-  'light-1', 
-  'light-2', 
-  'light-3', 
-  'light-4', 
+  'light-1',
+  'light-2',
+  'light-3',
+  'light-4',
   'white-1',
 ];
 const themeEnhancerDark = [
@@ -86,23 +87,29 @@ const Page = ({ params }: { params: { id: string } }) => {
   });
   const [showThemeManager, setShowThemeManager] = useState(false);
   const [searchSelectedTheme, setSearchSeletedTheme] = useState<string>("");
-  const [searchSelectedThemeEnhancer, setSearchSeletedThemeEnhancer] = useState<string>( "");
+  const [searchSelectedThemeEnhancer, setSearchSeletedThemeEnhancer] = useState<string>("");
   const [searchInput, setSearchInput] = useState("");
   const [filteredThemes, setFilteredThemes] = useState(themes);
-  
 
-
+  const [sidebarWidth, setSidebarWidth] = useState(250);
+  const sidebarRef = useRef<HTMLDivElement | null>(null);
+  const resizerRef = useRef<HTMLDivElement | null>(null);
 
   const searchResultsRef = useRef<HTMLDivElement | null>(null);
   const termBox = useRef(null);
   const termBoxTop = useRef(null);
   const settingsRef = useRef<HTMLDivElement | null>(null);
 
-  const handleThemeChange = (newTheme:string) => {
+  const [rightSidebarWidth, setRightSidebarWidth] = useState(250);
+  const rightSidebarRef = useRef<HTMLDivElement | null>(null);
+  const rightResizerRef = useRef<HTMLDivElement | null>(null);
+
+
+  const handleThemeChange = (newTheme: string) => {
     setSelectedTheme(newTheme);
     localStorage.setItem('editorTheme', newTheme);
   };
-  
+
 
   useEffect(() => {
     const savedTheme = localStorage.getItem('editorTheme');
@@ -128,8 +135,12 @@ const Page = ({ params }: { params: { id: string } }) => {
     if (settingsRef.current && !settingsRef.current.contains(event.target as Node)) {
       setShowSetting(false);
     }
-    
+
   };
+
+
+
+
   const handleThemeEnhancerChange = (value: string) => {
     setselectedShowThemeEnhancer(value);
     localStorage.setItem('themeenhancer', value);
@@ -160,14 +171,14 @@ const Page = ({ params }: { params: { id: string } }) => {
   };
 
 
-  const handleSearchInputChange = (e:any) => {
+  const handleSearchInputChange = (e: any) => {
     const query = e.target.value.toLowerCase();
     setSearchInput(query);
-  
+
     const filtered = themes.filter(theme => theme.toLowerCase().includes(query));
     setFilteredThemes(filtered);
   };
-  
+
   const handleThemeManagerClick = () => {
     setShowThemeManager(!showThemeManager);
     setShowThemeList(false);
@@ -278,45 +289,139 @@ const Page = ({ params }: { params: { id: string } }) => {
     }
   }, [project]);
 
+
   useEffect(() => {
     const terminalContainer: any = termBox.current;
     const resizerTop: any = termBoxTop.current;
 
-    let height = terminalContainer?.clientHeight || 0;
-    let yCord = 0;
+    if (!terminalContainer || !resizerTop) return;
+
+    let initialHeight = terminalContainer.clientHeight;
+    let startY = 0;
 
     const onMouseMoveTopResize = (event: MouseEvent) => {
-      const dy = event.clientY - yCord;
-      height = height - dy;
-      yCord = event.clientY;
-      if (terminalContainer) {
-        terminalContainer.style.height = `${height}px`;
-      }
+      const dy = startY - event.clientY;
+      const newHeight = Math.max(initialHeight + dy, 100);
+      terminalContainer.style.height = `${newHeight}px`;
     };
 
     const onMouseUpTopResize = () => {
       document.removeEventListener('mousemove', onMouseMoveTopResize);
+      document.removeEventListener('mouseup', onMouseUpTopResize);
     };
 
     const onMouseDownTopResize = (event: MouseEvent) => {
-      yCord = event.clientY;
-      console.log(yCord)
+      startY = event.clientY;
+      initialHeight = terminalContainer.clientHeight;
       document.addEventListener('mousemove', onMouseMoveTopResize);
       document.addEventListener('mouseup', onMouseUpTopResize);
     };
 
-    if (resizerTop) {
-      resizerTop.addEventListener('mousedown', onMouseDownTopResize);
+    resizerTop.addEventListener('mousedown', onMouseDownTopResize);
+
+    return () => {
+      resizerTop.removeEventListener('mousedown', onMouseDownTopResize);
+      document.removeEventListener('mousemove', onMouseMoveTopResize);
+      document.removeEventListener('mouseup', onMouseUpTopResize);
+    };
+  }, []);
+
+
+
+
+
+  useEffect(() => {
+    const sidebarContainer: any = sidebarRef.current;
+    if (!sidebarContainer) return;
+
+    let startX = 0;
+    let initialWidth = sidebarContainer.clientWidth;
+
+    const handleMouseMove = (e: MouseEvent) => {
+      if (sidebarRef.current) {
+        const dx = e.clientX - startX;
+        const newWidth = Math.max(Math.min(initialWidth + dx + 32, 400), 105);
+        setSidebarWidth(newWidth);
+      }
+    };
+
+    const handleMouseUp = () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+
+    const handleMouseDown = (e: MouseEvent) => {
+      if (resizerRef.current && sidebarRef.current) {
+        startX = e.clientX;
+        initialWidth = sidebarRef.current.getBoundingClientRect().width;
+
+        document.addEventListener('mousemove', handleMouseMove);
+        document.addEventListener('mouseup', handleMouseUp);
+      }
+    };
+
+    if (resizerRef.current) {
+      resizerRef.current.addEventListener('mousedown', handleMouseDown);
     }
 
     return () => {
-      document.removeEventListener('mousemove', onMouseMoveTopResize);
-      document.removeEventListener('mouseup', onMouseUpTopResize);
-      if (resizerTop) {
-        resizerTop.removeEventListener('mousedown', onMouseDownTopResize);
+      if (resizerRef.current) {
+        resizerRef.current.removeEventListener('mousedown', handleMouseDown);
       }
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
     };
   }, []);
+
+
+  {/* Right sidebar resizable */ }
+  useEffect(() => {
+    const rightSidebar = rightSidebarRef.current;
+    if (!rightSidebar) return;
+
+    let startX = 0;
+    let initialWidth = rightSidebar.clientWidth;
+
+    const handleMouseMove = (e: MouseEvent) => {
+      const dx = e.clientX - startX;
+      const newWidth = Math.max(Math.min(initialWidth - dx, 400), 105);
+      setRightSidebarWidth(newWidth);
+    };
+
+    const handleMouseUp = () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+
+    const handleMouseDown = (e: MouseEvent) => {
+      startX = e.clientX;
+      initialWidth = rightSidebar.clientWidth;
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mouseup', handleMouseUp);
+    };
+
+    if (rightResizerRef.current) {
+      rightResizerRef.current.addEventListener('mousedown', handleMouseDown);
+    }
+
+    return () => {
+      if (rightResizerRef.current) {
+        rightResizerRef.current.removeEventListener('mousedown', handleMouseDown);
+      }
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, []);
+
+
+
+
+
+
+
+
+
+
 
 
   const handleTitleChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -364,8 +469,8 @@ const Page = ({ params }: { params: { id: string } }) => {
 
 
         <div className={`relative w-full ${selectedThemeEnhancer}`}>
-          {showThemeList  ?
-            (<div className={`w-full absolute ${selectedThemeEnhancer} top-[-0.8rem] z-10 rounded-lg shadow-2xl`} style={{ border: isDarkMode?"0.5px solid rgba(255, 255, 255, 0.4)":"0.5px solid rgba(0, 0, 0, 0.5)" }} ref={searchResultsRef}>
+          {showThemeList ?
+            (<div className={`w-full absolute ${selectedThemeEnhancer} top-[-0.8rem] z-10 rounded-lg shadow-2xl`} style={{ border: isDarkMode ? "0.5px solid rgba(255, 255, 255, 0.4)" : "0.5px solid rgba(0, 0, 0, 0.5)" }} ref={searchResultsRef}>
               <div className="relative m-2 shadow-xl" style={{ fontSize: "12px" }}>
                 <p className="absolute top-1 left-5">🔎</p>
                 <input
@@ -398,7 +503,7 @@ const Page = ({ params }: { params: { id: string } }) => {
                 ))}
               </div>
             </div>
-            ) : showThemeEnhancer ? (<div className={`w-full absolute ${selectedThemeEnhancer} themeinput top-[-0.8rem] z-10 rounded-lg shadow-2xl`} style={{ border: isDarkMode?"0.5px solid rgba(255, 255, 255, 0.4)":"0.5px solid rgba(0, 0, 0, 0.5)" }} ref={searchResultsRef}>
+            ) : showThemeEnhancer ? (<div className={`w-full absolute ${selectedThemeEnhancer} themeinput top-[-0.8rem] z-10 rounded-lg shadow-2xl`} style={{ border: isDarkMode ? "0.5px solid rgba(255, 255, 255, 0.4)" : "0.5px solid rgba(0, 0, 0, 0.5)" }} ref={searchResultsRef}>
               <div className="relative m-2 shadow-xl" style={{ fontSize: "12px" }}>
                 <p className="absolute top-1 left-5">🔎</p>
                 <input
@@ -411,17 +516,17 @@ const Page = ({ params }: { params: { id: string } }) => {
                   onKeyDown={(e) => {
                     if (e.key === 'Enter') {
                       setselectedShowThemeEnhancer(searchSelectedThemeEnhancer);
-                      
+
                     }
                   }}
                 />
               </div>
               <div className="max-h-40 overflow-y-scroll no-scrollbar">
-                {(!isDarkMode ? themeEnhancerLight : themeEnhancerDark).filter((res)=>res.toLowerCase().includes(searchSelectedThemeEnhancer.toLowerCase())).map((res: string, index: number) => (
+                {(!isDarkMode ? themeEnhancerLight : themeEnhancerDark).filter((res) => res.toLowerCase().includes(searchSelectedThemeEnhancer.toLowerCase())).map((res: string, index: number) => (
                   <p
                     key={index}
                     className={`${isDarkMode ? 'text-white-1' : 'text-black-1'} cursor-pointer hover:bg-orange-1 rounded-b-lg px-5 py-1 text-small-regular`}
-                    onClick={() =>{ handleThemeEnhancerChange(res);}}
+                    onClick={() => { handleThemeEnhancerChange(res); }}
                   >
                     {res}
                   </p>
@@ -429,7 +534,7 @@ const Page = ({ params }: { params: { id: string } }) => {
               </div>
             </div>
             ) : (
-              <div className={`w-full absolute ${selectedThemeEnhancer} top-[-0.8rem] z-10 rounded-lg shadow-2xl`} style={{ border: isDarkMode?"0.5px solid rgba(255, 255, 255, 0.4)":"0.5px solid rgba(0, 0, 0, 0.5)" }} ref={searchResultsRef}>
+              <div className={`w-full absolute ${selectedThemeEnhancer} top-[-0.8rem] z-10 rounded-lg shadow-2xl`} style={{ border: isDarkMode ? "0.5px solid rgba(255, 255, 255, 0.4)" : "0.5px solid rgba(0, 0, 0, 0.5)" }} ref={searchResultsRef}>
                 <div className="relative" style={{ fontSize: "12px" }}>
                   <p className="absolute top-1 left-5">🔎</p>
                   <input
@@ -437,7 +542,7 @@ const Page = ({ params }: { params: { id: string } }) => {
                     value={searchSelectedPath}
                     placeholder={selectedPath}
                     className={`${selectedThemeEnhancer} rounded-lg text-center w-full p-[2px]`}
-                    style={{color: isDarkMode ? 'white' : 'black' }}
+                    style={{ color: isDarkMode ? 'white' : 'black' }}
                     onChange={(e) => setSearchSeletedPath(e.target.value)}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') {
@@ -465,15 +570,15 @@ const Page = ({ params }: { params: { id: string } }) => {
 
         <div className="flex items-center justify-end space-x-4">
           <Image
-              src={isDarkMode
-                ? "/icons/dark-theme.svg"
-                : "/icons/light-theme.svg"
-              }
-              alt="Modes"
-              className="w-4 h-4"
-              width={14}
-              height={14}
-            />
+            src={isDarkMode
+              ? "/icons/dark-theme.svg"
+              : "/icons/light-theme.svg"
+            }
+            alt="Modes"
+            className="w-4 h-4"
+            width={14}
+            height={14}
+          />
           <h3 className={`text-small-regular mr-2 ${isDarkMode ? "text-white-2" : "text-black-2"}`}>
             {isDarkMode ? "Dark Mode" : "Light Mode"}
           </h3>
@@ -504,17 +609,17 @@ const Page = ({ params }: { params: { id: string } }) => {
               height={14}
             />
             {showSetting && (
-              <div className={`themesetting ${isDarkMode?"text-white-3":"text-black-1"} absolute right-0 top-8 border border-black-3 shadow-2xl px-1 py-1 rounded-md z-50 right-clicks-modals w-[200px]`} style={{color:"whitesmoke"}}>
+              <div className={`themesetting ${isDarkMode ? "text-white-3" : "text-black-1"} absolute right-0 top-8 border border-black-3 shadow-2xl px-1 py-1 rounded-md z-50 right-clicks-modals w-[200px]`} style={{ color: "whitesmoke" }}>
                 <p className="text-small-regular cursor-pointer px-2 hover:bg-orange-1 hover:text-white-1 rounded-sm" onClick={handleThemeManagerClick}>{showThemeManager ? ">" : "<"} Manage Themes</p>
                 {showThemeManager && (
-                 
-                  <div className={`themesetting ${isDarkMode?"text-white-3":"text-black-1"} absolute top-2 right-clicks-modals left-[-200px] border border-gray-300 px-1 py-1 rounded-md w-[200px] max-h-[300px] overflow-y-scroll no-scrollbar shadow-2xl`} style={{ color:"whitesmoke"}}>
-                
+
+                  <div className={`themesetting ${isDarkMode ? "text-white-3" : "text-black-1"} absolute top-2 right-clicks-modals left-[-200px] border border-gray-300 px-1 py-1 rounded-md w-[200px] max-h-[300px] overflow-y-scroll no-scrollbar shadow-2xl`} style={{ color: "whitesmoke" }}>
+
                     <p className="text-small-regular cursor-pointer px-2 py-1/2 hover:bg-orange-1 hover:text-white-1 mb-1 rounded-sm" onClick={() => setShowThemeList(!showThemeList)}>Editor Theme</p>
-                    
+
 
                     <p className="text-small-regular cursor-pointer px-2 py-1/2 hover:bg-orange-1 hover:text-white-1 rounded-sm" onClick={() => setShowThemeEnhancer(!showThemeEnhancer)}>Product Theme</p>
-                    
+
                   </div>
                 )}
               </div>
@@ -527,19 +632,31 @@ const Page = ({ params }: { params: { id: string } }) => {
 
       <div className={`main-container flex ${isDarkMode ? "text-white-1" : "text-black-1"} ${selectedThemeEnhancer ? `${selectedThemeEnhancer}` : ""}`}>
 
-       
-        {/* Sidebar */}
 
-        <div className={`w-[290px] ${selectedThemeEnhancer} h-[96vh] py-3 px-3 flex flex-col ${showSideBar ? "flex" : "hidden"}`} style={{ borderRight: isDarkMode ? "0.5px solid rgba(255, 255, 255, 0.4)" : "0.5px solid rgba(0, 0, 0, 0.4)" }}>
-          
+        {/* Sidebar */}
+        <div
+          ref={sidebarRef}
+          className={` ${selectedThemeEnhancer} h-[96vh] py-3 px-3 flex flex-col ${showSideBar ? "flex" : "hidden"}`}
+          style={{
+            width: `${sidebarWidth}px`,
+            borderRight: isDarkMode ? "0.5px solid rgba(255, 255, 255, 0.4)" : "0.5px solid rgba(0, 0, 0, 0.4)"
+          }}
+        >
           <div className="w-full flex justify-between items-center px-4 mb-7 mt-2">
             <p className={` ${!isDarkMode ? "text-black-2" : "text-white-2"} text-small-regular m-0`}>Explorer</p>
-            <Image src={isDarkMode ? '/icons/hamburger.svg' : '/icons/dark-hamburger.svg'} alt="hamburger" width={25} height={25} className={` ${isDarkMode ? "hover:bg-white-2" : "hover:bg-gray-50"} rounded-full cursor-pointer p-1`} onClick={() => setShowSideBar(!showSideBar)} />
+            <Image
+              src={isDarkMode ? '/icons/hamburger.svg' : '/icons/dark-hamburger.svg'}
+              alt="hamburger"
+              width={25}
+              height={25}
+              className={` ${isDarkMode ? "hover:bg-white-2" : "hover:bg-gray-50"} rounded-full cursor-pointer p-1`}
+              onClick={() => setShowSideBar(!showSideBar)}
+            />
           </div>
           <div className="overflow-y-scroll no-scrollbar">
             {docName !== "" ? (
               <FileStructureTree
-                onSelect={(path: string) => setSeletedPath(path)}
+                onSelect={(path: SetStateAction<string>) => setSeletedPath(path)}
                 pId={project}
                 searchSelectedPath={searchSelectedPath}
                 searchResult={searchResult}
@@ -551,7 +668,13 @@ const Page = ({ params }: { params: { id: string } }) => {
             ) : ""}
           </div>
         </div>
-
+        <div
+          ref={resizerRef}
+          className="resizer hover:bg-orange-1 w-1"
+          style={{
+            cursor: 'col-resize',
+          }}
+        />
         <div className={`absolute bg-transparent top-0 m-2 z-10 cursor-pointer ${!showSideBar ? "block" : "hidden"}`} onClick={() => setShowSideBar(!showSideBar)}>
           <Image src={isDarkMode ? '/icons/hamburger.svg' : '/icons/dark-hamburger.svg'} alt="hamburger" width={18} height={18} className="cursor-pointer text-white-1" />
         </div>
@@ -566,7 +689,7 @@ const Page = ({ params }: { params: { id: string } }) => {
                   {allPaths.map((paths: any, index: number) => (
                     <>
                       {paths !== "" ?
-                        <Tabs filePath={paths} isActive={paths === selectedTabPath} setSelectedTabPath={setSelectedTabPath} setSeletedPath={setSeletedPath} index={index} handleRemoveTab={handleRemoveTab} isDarkMode={isDarkMode} bgcolor={selectedThemeEnhancer}/> : ""
+                        <Tabs filePath={paths} isActive={paths === selectedTabPath} setSelectedTabPath={setSelectedTabPath} setSeletedPath={setSeletedPath} index={index} handleRemoveTab={handleRemoveTab} isDarkMode={isDarkMode} bgcolor={selectedThemeEnhancer} /> : ""
                       }
                     </>
                   ))}
@@ -578,17 +701,63 @@ const Page = ({ params }: { params: { id: string } }) => {
             )}
           </div>
 
-          <div ref={termBox} className={`terminal-container relative ${selectedTabPath ? "mt-8" : ""}`} style={{ borderTop: isDarkMode ? "0.5px solid rgba(255, 255, 255, 0.4)" : "0.5px solid rgba(0, 0, 0, 0.4)" }}>
-            <div ref={termBoxTop} className="resizer rt absolute top-0 left-0 w-full cursor-row-resize h-1 hover:h-[2px] hover:bg-orange-1 "></div>
-            <div className={`w-full ${isDarkMode ? " text-white-1" : " text-black-1"} ${selectedThemeEnhancer}  flex justify-between items-center  px-5 ${showTerminal ? 'py-2' : "py-0"}`}>
+          <div
+            ref={termBox}
+            className={`terminal-container relative ${selectedTabPath ? "mt-8" : ""}`}
+            style={{ borderTop: isDarkMode ? "0.5px solid rgba(255, 255, 255, 0.4)" : "0.5px solid rgba(0, 0, 0, 0.4)" }}
+          >
+            <div
+              ref={termBoxTop}
+              className=" rt absolute top-0 left-0 w-full cursor-row-resize h-1 hover:h-[2px] hover:bg-orange-1"
+              style={{ cursor: 'row-resize' }}
+            ></div>
+            <div className={`w-full ${isDarkMode ? "text-white-1" : "text-black-1"} ${selectedThemeEnhancer} flex justify-between items-center px-5 ${showTerminal ? 'py-2' : "py-0"}`}>
               <p style={{ borderBottom: "0.5px solid #877EFF", fontSize: "12px", margin: "0" }}>TERMINAL</p>
-              <p className={`${showTerminal ? "-mt-2" : "mt-0"} cursor-pointer`} style={{ fontSize: "20px" }} onClick={() => setShowTerminal(!showTerminal)}>{showTerminal ? '⌄' : '˄'}</p>
+              <p></p>
+              <p
+                className={`${showTerminal ? "-mt-2" : "mt-0"} cursor-pointer`}
+                style={{ fontSize: "20px" }}
+                onClick={() => setShowTerminal(!showTerminal)}
+              >
+                {showTerminal ? '⌄' : '˄'}
+              </p>
             </div>
             {showTerminal && project ? (
               <Terminal pId={project} isDarkMode={isDarkMode} bgcolor={selectedThemeEnhancer} />
             ) : ""}
           </div>
+
         </div>
+
+        {/* Right Sidebar */}
+
+        <div
+          className="sidebar h-[96vh] "
+          ref={rightSidebarRef}
+          style={{
+            width: `${rightSidebarWidth}px`,
+            borderLeft: isDarkMode ? "0.5px solid rgba(255, 255, 255, 0.4)" : "0.5px solid rgba(0, 0, 0, 0.4)",
+            position: 'relative'
+          }}
+        >
+          <div
+            ref={rightResizerRef}
+            className="resizer hover:bg-orange-1 w-1"
+            style={{
+              cursor: 'col-resize',
+              height: '100%',
+              position: 'absolute',
+              left: '-2.5px',
+              top: 0,
+            }}
+          />
+          <div className="sidebar-content" style={{ paddingLeft: '5px' }}>
+            <p>Sidebar Item 1</p>
+            <p>Sidebar Item 2</p>
+          </div>
+        </div>
+
+
       </div>
     </div>
   );
