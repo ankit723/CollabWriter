@@ -205,6 +205,7 @@ const ws = new WebSocket(
 );
 
 const FileTreeNode = ({ fileName, nodes, onSelect, path, searchSelectedPath, setSearchResult, searchResult, pId, newFolderCreatedPath, setNewFolderCreatedPath, newFileCreatedPath, setNewFileCreatedPath, isDarkMode,bgcolor }: any) => {
+  console.log(bgcolor)
   const [isExpanded, setIsExpanded] = useState(false);
   const [menuStyle, setMenuStyle] = useState<any>({ display: "none", top: 0, left: 0, });
   const [folderMenuStyle, setFolderMenuStyle] = useState<any>({ display: "none", top: 0, left: 0, });
@@ -423,7 +424,7 @@ const FileTreeNode = ({ fileName, nodes, onSelect, path, searchSelectedPath, set
                   handleFolderRename(path);
                 }
               }}
-              className={`bg-${bgcolor}`}
+              className={`bg-white-1 text-black-1`}
               autoFocus
             />
           ) : (
@@ -480,7 +481,7 @@ const FileTreeNode = ({ fileName, nodes, onSelect, path, searchSelectedPath, set
                       handleRename(path);
                     }
                   }}
-                  className={`bg-${bgcolor}`}
+                  className={`bg-white-1 text-black-1`}
                   autoFocus
                 />
               ) : (

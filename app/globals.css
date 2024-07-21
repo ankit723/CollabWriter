@@ -41,6 +41,9 @@ html {
 .editor-tab-light-active{
   border-bottom: none;
   border-top: 2px solid rgba(0, 102, 255, 0.758);
+  background-color: #e4e4e4;
+  box-shadow:  10px 10px;
+
 }
 
 @media (prefers-color-scheme: light) {
