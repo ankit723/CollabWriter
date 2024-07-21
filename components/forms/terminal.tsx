@@ -27,8 +27,9 @@ const themeMap:any={
     "black-7": "rgb(24, 24, 24)",
 }
 
-const Terminal = ({ pId, isDarkMode ,bgcolor}: any) => {
+const Terminal = ({ pId, isDarkMode, bgcolor, tId}: any) => {
     const [projectId, setProjectId] = useState<any>(pId)
+    const [terminalId, setTerminalId] = useState<any>(tId)
     const terminalRef = useRef<HTMLDivElement | null>(null)
     const wsRef = useRef<WebSocket | null>(null)
     const termRef = useRef<XTerminal | null>(null)
@@ -41,6 +42,7 @@ const Terminal = ({ pId, isDarkMode ,bgcolor}: any) => {
             setShowTerminal(true)
         }, 200)
     }, [isDarkMode,bgcolor])
+
 
     useEffect(() => {
         if (showTerminal && terminalRef.current) {
@@ -74,7 +76,7 @@ const Terminal = ({ pId, isDarkMode ,bgcolor}: any) => {
 
             term.onData((data: any) => {
                 if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
-                    wsRef.current.send(JSON.stringify({ type: 'terminal:write', data: data, projectId: projectId }))
+                    wsRef.current.send(JSON.stringify({ type: 'terminal:write', data: data, projectId: projectId, terminalId:terminalId }))
                 }
             })
 
@@ -82,13 +84,17 @@ const Terminal = ({ pId, isDarkMode ,bgcolor}: any) => {
 
             wsRef.current.onopen = () => {
                 console.log('WebSocket connection established')
-                // Optionally, you could notify the server that the terminal is ready
+                if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+                    if (pId) {
+                        wsRef.current?.send(JSON.stringify({ type: "project:started", data: { id: pId, tId: tId } }));
+                    }                
+                }
+                
             }
 
             wsRef.current.onmessage = (event) => {
                 const message = JSON.parse(event.data)
                 if (message.type === 'terminal:data' && message.projectId === projectId) {
-                    console.log('Terminal data:', message.data)
                     term.write(message.data)
                 }
             }
@@ -107,16 +113,16 @@ const Terminal = ({ pId, isDarkMode ,bgcolor}: any) => {
                 termRef.current.dispose()
                 termRef.current = null
             }
-            if (wsRef.current) {
-                wsRef.current.close()
-                wsRef.current = null
-            }
         }
-    }, [projectId, isDarkMode, showTerminal,bgcolor])
+    }, [projectId, isDarkMode, showTerminal,bgcolor, terminalId])
 
     useEffect(() => {
         setProjectId(pId)
     }, [pId])
+    
+    useEffect(() => {
+        setTerminalId(tId)
+    }, [tId])
 
     return (
         <>

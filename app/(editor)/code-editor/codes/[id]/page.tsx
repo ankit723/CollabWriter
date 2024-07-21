@@ -14,6 +14,7 @@ import Image from "next/image";
 import { Input } from "@/components/ui/input";
 import Tabs from "@/components/cards/tabs";
 import { AnyCnameRecord } from "dns";
+import TerminalTabs from "@/components/cards/terminalTabs";
 
 const ws = new WebSocket(
   process.env.NEXT_PUBLIC_SOCKET_BACKEND_URL || "ws://localhost:5001"
@@ -103,6 +104,10 @@ const Page = ({ params }: { params: { id: string } }) => {
   const [rightSidebarWidth, setRightSidebarWidth] = useState(250);
   const rightSidebarRef = useRef<HTMLDivElement | null>(null);
   const rightResizerRef = useRef<HTMLDivElement | null>(null);
+
+  const [terminal, setTerminal]=useState([0])
+  const [terminalNumber, setTerminalNumber]=useState(0)
+  const [currentTerminal, setCurrentTerminal]=useState(0)
 
 
   const handleThemeChange = (newTheme: string) => {
@@ -281,13 +286,6 @@ const Page = ({ params }: { params: { id: string } }) => {
   useEffect(() => {
     console.log(searchSelectedPath)
   }, [searchSelectedPath])
-
-
-  useEffect(() => {
-    if (project) {
-      ws.send(JSON.stringify({ type: "project:started", data: { id: project } }));
-    }
-  }, [project]);
 
 
   useEffect(() => {
@@ -712,18 +710,28 @@ const Page = ({ params }: { params: { id: string } }) => {
               style={{ cursor: 'row-resize' }}
             ></div>
             <div className={`w-full ${isDarkMode ? "text-white-1" : "text-black-1"} ${selectedThemeEnhancer} flex justify-between items-center px-5 ${showTerminal ? 'py-2' : "py-0"}`}>
-              <p style={{ borderBottom: "0.5px solid #877EFF", fontSize: "12px", margin: "0" }}>TERMINAL</p>
-              <p></p>
-              <p
-                className={`${showTerminal ? "-mt-2" : "mt-0"} cursor-pointer`}
-                style={{ fontSize: "20px" }}
-                onClick={() => setShowTerminal(!showTerminal)}
-              >
-                {showTerminal ? '⌄' : '˄'}
-              </p>
+              {/* {terminal.map((term)=>(
+                <TerminalTabs setCurrentTerminal={setCurrentTerminal} index={term}/>
+              ))}               */}
+              <div className="flex gap-2">
+                <p className={`cursor-pointer`}style={{ fontSize: "20px" }}onClick={() => {
+                  setTerminalNumber(terminalNumber+1);
+                  setTerminal([...terminal, terminalNumber+1])
+                }}>
+                  {showTerminal ? '+':''}
+                </p>
+                <p className={`${showTerminal ? "-mt-2" : "mt-0"} cursor-pointer`}style={{ fontSize: "20px" }}onClick={() => setShowTerminal(!showTerminal)}>
+                  {showTerminal ? '⌄' : '˄'}
+                </p>
+              </div>
             </div>
             {showTerminal && project ? (
-              <Terminal pId={project} isDarkMode={isDarkMode} bgcolor={selectedThemeEnhancer} />
+              <>
+              {terminal.map((term)=>(
+                <Terminal pId={project} isDarkMode={isDarkMode} bgcolor={selectedThemeEnhancer} tId={term}/>
+              ))}    
+              
+              </>
             ) : ""}
           </div>
 
