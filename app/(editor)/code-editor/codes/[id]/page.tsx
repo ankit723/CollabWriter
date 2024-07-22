@@ -710,9 +710,9 @@ const Page = ({ params }: { params: { id: string } }) => {
               style={{ cursor: 'row-resize' }}
             ></div>
             <div className={`w-full ${isDarkMode ? "text-white-1" : "text-black-1"} ${selectedThemeEnhancer} flex justify-between items-center px-5 ${showTerminal ? 'py-2' : "py-0"}`}>
-              {/* {terminal.map((term)=>(
+              {terminal.map((term)=>(
                 <TerminalTabs setCurrentTerminal={setCurrentTerminal} index={term}/>
-              ))}               */}
+              ))}              
               <div className="flex gap-2">
                 <p className={`cursor-pointer`}style={{ fontSize: "20px" }}onClick={() => {
                   setTerminalNumber(terminalNumber+1);
@@ -727,10 +727,7 @@ const Page = ({ params }: { params: { id: string } }) => {
             </div>
             {showTerminal && project ? (
               <>
-              {terminal.map((term)=>(
-                <Terminal pId={project} isDarkMode={isDarkMode} bgcolor={selectedThemeEnhancer} tId={term}/>
-              ))}    
-              
+                <Terminal pId={project} isDarkMode={isDarkMode} bgcolor={selectedThemeEnhancer} tId={currentTerminal}/>
               </>
             ) : ""}
           </div>
