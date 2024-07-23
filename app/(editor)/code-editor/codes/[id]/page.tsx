@@ -710,13 +710,12 @@ const Page = ({ params }: { params: { id: string } }) => {
               style={{ cursor: 'row-resize' }}
             ></div>
             <div className={`w-full ${isDarkMode ? "text-white-1" : "text-black-1"} ${selectedThemeEnhancer} flex justify-between items-center px-5 ${showTerminal ? 'py-2' : "py-0"}`}>
-              {terminal.map((term)=>(
-                <TerminalTabs setCurrentTerminal={setCurrentTerminal} index={term}/>
-              ))}              
+              <p className="" style={{fontSize:"11px", letterSpacing:"1px"}}>TERMINAL</p>
               <div className="flex gap-2">
                 <p className={`cursor-pointer`}style={{ fontSize: "20px" }}onClick={() => {
                   setTerminalNumber(terminalNumber+1);
                   setTerminal([...terminal, terminalNumber+1])
+                  setCurrentTerminal(terminalNumber+1)
                 }}>
                   {showTerminal ? '+':''}
                 </p>
@@ -727,7 +726,21 @@ const Page = ({ params }: { params: { id: string } }) => {
             </div>
             {showTerminal && project ? (
               <>
-                <Terminal pId={project} isDarkMode={isDarkMode} bgcolor={selectedThemeEnhancer} tId={currentTerminal}/>
+                {terminal.map((term)=>(
+                  <div className={`${term===currentTerminal?"flex justify-between":"hidden"}`}>
+                    <Terminal pId={project} isDarkMode={isDarkMode} bgcolor={selectedThemeEnhancer} tId={term}/>
+                    <div className="flex flex-col gap-2 border-l-2 w-32 py-2" style={{borderLeft:"0.4px solid rgba(255, 255, 255, 0.4)"}}>
+                      {terminal.map((term)=>(
+                        <div className="px-2 py-1/2" style={{backgroundColor:`${term===currentTerminal?"rgb(255, 255, 255, 0.2)":"none"}`, borderLeft:`${term===currentTerminal?"2px solid rgba(2, 120, 212, 1)":"none"}`}}>
+                          <div className="flex gap-2">
+                            <Image src={'/icons/terminal-window-light.svg'} width={20} height={20} alt="terminal image"/> 
+                            <TerminalTabs setCurrentTerminal={setCurrentTerminal} index={term} isActive={term===currentTerminal}/>
+                          </div>
+                        </div>
+                      ))}              
+                    </div>
+                  </div>
+                ))}
               </>
             ) : ""}
           </div>
