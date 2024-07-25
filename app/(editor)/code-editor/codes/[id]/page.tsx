@@ -516,7 +516,6 @@ const Page = ({ params }: { params: { id: string } }) => {
   useEffect(() => {
     setSelectedTabPath(allPaths[allPaths.length - 1]);
   }, [allPaths]);
-
   const handleRemoveTab = (index: number) => {
     const newPaths = allPaths.filter((_, i) => i !== index);
     setAllPaths(newPaths);
