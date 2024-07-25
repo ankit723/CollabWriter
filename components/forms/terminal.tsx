@@ -72,7 +72,11 @@ const Terminal = ({ pId, isDarkMode, bgcolor, tId}: any) => {
                 term.element.style.padding = "20px"
             }
 
-            document.getElementsByClassName('xterm-viewport')[0].classList.add('no-scrollbar')
+            // Convert HTMLCollection to an array and iterate over each element
+            Array.from(document.getElementsByClassName('xterm-viewport')).forEach((xterm) => {
+                xterm.classList.add('no-scrollbar');
+            });
+
 
             term.onData((data: any) => {
                 if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
