@@ -379,3 +379,56 @@ html {
 .resizer1 {
   width: 5px;
 }
+
+.terminal-closed {
+  overflow: hidden;
+}
+
+
+/* Making the codeeditor responsive*/
+/* .title-name-codeeditor{
+  font-size: 12px;
+} */
+
+
+.title-name-codeeditor {
+  width: 90%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: default;
+}
+.magnifing-search{
+  left:0.5rem;
+}
+
+/* For Tablets */
+@media (max-width: 768px) {
+  .title-name-codeeditor {
+    font-size: 12px; 
+  }
+  #terminal{
+    width:75%
+  }
+}
+
+
+/* For mobile */
+@media (max-width: 480px) {
+  .title-name-codeeditor {
+    cursor: pointer;
+  }
+  .title-name-codeeditor.expanded {
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+  }
+  .logo-link {
+    display: none;
+  }
+  .magnifing-search{
+    left:0.25rem;
+  }
+  
+}
+
