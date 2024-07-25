@@ -91,8 +91,12 @@ const Page = ({ params }: { params: { id: string } }) => {
   const [searchSelectedThemeEnhancer, setSearchSeletedThemeEnhancer] = useState<string>("");
   const [searchInput, setSearchInput] = useState("");
   const [filteredThemes, setFilteredThemes] = useState(themes);
-  const [sidebarWidth, setSidebarWidth] = useState(250);
 
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [isMobileView, setIsMobileView] = useState(window.innerWidth <= 768);
+  const sidebarOnMobileViewRef = useRef<HTMLDivElement | null>(null);
+
+  const [sidebarWidth, setSidebarWidth] = useState(isMobileView ? 250 : 350);
   const sidebarRef = useRef<HTMLDivElement | null>(null);
   const resizerRef = useRef<HTMLDivElement | null>(null);
 
@@ -101,7 +105,7 @@ const Page = ({ params }: { params: { id: string } }) => {
   const termBoxTop = useRef(null);
   const settingsRef = useRef<HTMLDivElement | null>(null);
 
-  const [rightSidebarWidth, setRightSidebarWidth] = useState(250);
+  const [rightSidebarWidth, setRightSidebarWidth] = useState(isMobileView ? 250 : 350);
   const rightSidebarRef = useRef<HTMLDivElement | null>(null);
   const rightResizerRef = useRef<HTMLDivElement | null>(null);
 
@@ -109,9 +113,6 @@ const Page = ({ params }: { params: { id: string } }) => {
   const [terminalNumber, setTerminalNumber] = useState(0)
   const [currentTerminal, setCurrentTerminal] = useState(0)
 
-  const [isExpanded, setIsExpanded] = useState(false);
-  const [isMobileView, setIsMobileView] = useState(window.innerWidth <= 768);
-  const sidebarOnMobileViewRef = useRef<HTMLDivElement | null>(null);
 
   const handleThemeChange = (newTheme: string) => {
     setSelectedTheme(newTheme);
@@ -466,7 +467,31 @@ const Page = ({ params }: { params: { id: string } }) => {
 
 
 
-
+  const handleRunCode = () => {
+    const fileName = selectedPath.split('/').pop()
+    const extention = selectedPath.split('.').pop()
+    let runCommand = ""
+    switch (extention) {
+      case "js":
+        runCommand = `node ${fileName}`
+        break;
+      case "py":
+        runCommand = `python3 ${fileName}`
+        break;
+      case "c":
+        runCommand = `gcc ${fileName}`
+        break;
+      case "c++":
+        runCommand = `g++ ${fileName}`
+        break;
+      case "cpp":
+        runCommand = `g++ ${fileName}`
+        break;
+    }
+    runCommand = runCommand + '\r';
+    console.log(fileName, extention, runCommand, project, currentTerminal)
+    ws.send(JSON.stringify({ type: "terminal:write", data: runCommand, projectId: project, terminalId: currentTerminal }))
+  }
 
 
 
@@ -503,7 +528,7 @@ const Page = ({ params }: { params: { id: string } }) => {
   };
 
   return (
-    <div className={`custom-scrollbar w-screen ${selectedThemeEnhancer}`}>
+    <div className={`custom-scrollbar fixed w-screen ${selectedThemeEnhancer}`}>
 
 
 
@@ -619,8 +644,9 @@ const Page = ({ params }: { params: { id: string } }) => {
         </div>
 
 
-
         <div className="flex items-center justify-end space-x-4">
+          <Image src={"/icons/Play.svg"} alt="Modes" className="w-4 h-4 mx-4 cursor-pointer" width={24} height={24} onClick={()=>handleRunCode()}/>
+
           <Image
             src={isDarkMode
               ? "/icons/dark-theme.svg"
@@ -679,9 +705,11 @@ const Page = ({ params }: { params: { id: string } }) => {
           </div>
         </div>
       </header> */}
-<div className={`absolute bg-transparent top-1.5 ml-1 z-10 cursor-pointer ${!showSideBar ? "block" : "hidden"}`} onClick={() => setShowSideBar(!showSideBar)}>
-        <Image src={isDarkMode ? '/icons/hamburger.svg' : '/icons/dark-hamburger.svg'} alt="hamburger" width={18} height={18} className="cursor-pointer text-white-1" />
-      </div>
+      { isMobileView ?
+        <div className={`absolute bg-transparent top-1.5 ml-1 z-10 cursor-pointer ${!showSideBar ? "block" : "hidden"}`} onClick={() => setShowSideBar(!showSideBar)}>
+          <Image src={isDarkMode ? '/icons/hamburger.svg' : '/icons/dark-hamburger.svg'} alt="hamburger" width={18} height={18} className="cursor-pointer text-white-1" />
+        </div> : ""
+      }
       <header
         className={`grid grid-cols-3 items-center py-1 px-4 sm:px-6 md:px-8 ${selectedThemeEnhancer}`}
         // className={`grid grid-cols-3 items-center py-1 px-4 sm:px-6 md:px-8 ${selectedThemeEnhancer}`}
@@ -940,7 +968,7 @@ const Page = ({ params }: { params: { id: string } }) => {
                   </p>
                   {showThemeManager && (
                     <div
-                      className={`themesetting ${isDarkMode ? 'text-white-3' : 'text-black-1'} border border-gray-300 px-1 py-1 rounded-md w-[150px] sm:w-[200px] max-h-[300px] overflow-y-scroll no-scrollbar shadow-2xl mt-2`}
+                      className={`themesetting ${isDarkMode ? 'text-white-3' : 'text-black-1'} border border-gray-300 px-1 py-1 rounded-md w-[140px] sm:w-[200px] max-h-[300px] overflow-y-scroll no-scrollbar shadow-2xl mt-2`}
                       style={{ color: 'whitesmoke' }}
                     >
                       <p
@@ -1074,117 +1102,117 @@ const Page = ({ params }: { params: { id: string } }) => {
                 ) : ""}
               </div>
             </div></>
-        ) :( 
-        <>
-        <div
-        ref={(ref) => {
-          sidebarRef.current = ref;
-          sidebarOnMobileViewRef.current = ref;
-        }}
-        className={`${selectedThemeEnhancer} sidebarOnMobileView  h-[96vh] z-50 py-3 px-3 flex flex-col ${showSideBar ? "flex" : "hidden"}`}
-        style={{
-          width: `${sidebarWidth}px`,
-          borderRight: isDarkMode ? "0.5px solid rgba(255, 255, 255, 0.4)" : "0.5px solid rgba(0, 0, 0, 0.4)",
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          zIndex: 1000
-        }}
-      >
-        <div className="w-full flex justify-between items-center px-4 mb-7 mt-2">
-          <p className={` ${!isDarkMode ? "text-black-2" : "text-white-2"} text-small-regular m-0`}>Explorer</p>
-          <Image
-            src={isDarkMode ? '/icons/hamburger.svg' : '/icons/dark-hamburger.svg'}
-            alt="hamburger"
-            width={25}
-            height={25}
-            className={` ${isDarkMode ? "hover:bg-white-2" : "hover:bg-gray-50"} rounded-full cursor-pointer p-1`}
-            onClick={() => setShowSideBar(!showSideBar)} />
-        </div>
-        <div className="overflow-y-scroll no-scrollbar">
-          {docName !== "" ? (
-            <FileStructureTree
-              onSelect={(path: SetStateAction<string>) => setSeletedPath(path)}
-              pId={project}
-              searchSelectedPath={searchSelectedPath}
-              searchResult={searchResult}
-              setSearchResult={setSearchResult}
-              docName={docName ? docName : docName}
-              isDarkMode={isDarkMode}
-              bgcolor={selectedThemeEnhancer} />
-          ) : ""}
-        </div>
-      </div><div
-          ref={resizerRef}
-          className="resizer hover:bg-orange-1 w-1"
-          style={{
-            cursor: 'col-resize',
-          }} />
-          <div className="code-container w-full flex flex-col justify-between h-[96vh]">
-          <div className={`h-full editor ${selectedThemeEnhancer}`}>
-            {selectedTabPath && (
-              <div className="h-full">
-                <div className={`tabs-section w-[100%] ${selectedThemeEnhancer} flex overflow-x-scroll no-scrollbar`}>
-                  {allPaths.map((paths: any, index: number) => (
-                    <>
-                      {paths !== "" ?
-                        <Tabs filePath={paths} isActive={paths === selectedTabPath} setSelectedTabPath={setSelectedTabPath} setSeletedPath={setSeletedPath} index={index} handleRemoveTab={handleRemoveTab} isDarkMode={isDarkMode} bgcolor={selectedThemeEnhancer} /> : ""}
-                    </>
-                  ))}
-                </div>
-                {selectedTabPath ? (
-                  <CodeEditor path={selectedTabPath} pId={project} selectedTheme={selectedTheme} />
+        ) : (
+          <>
+            <div
+              ref={(ref) => {
+                sidebarRef.current = ref;
+                sidebarOnMobileViewRef.current = ref;
+              }}
+              className={`${selectedThemeEnhancer} sidebarOnMobileView  h-[96vh] z-50 py-3 px-3 flex flex-col ${showSideBar ? "flex" : "hidden"}`}
+              style={{
+                width: `${sidebarWidth}px`,
+                borderRight: isDarkMode ? "0.5px solid rgba(255, 255, 255, 0.4)" : "0.5px solid rgba(0, 0, 0, 0.4)",
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                zIndex: 1000
+              }}
+            >
+              <div className="w-full flex justify-between items-center px-4 mb-7 mt-2">
+                <p className={` ${!isDarkMode ? "text-black-2" : "text-white-2"} text-small-regular m-0`}>Explorer</p>
+                <Image
+                  src={isDarkMode ? '/icons/hamburger.svg' : '/icons/dark-hamburger.svg'}
+                  alt="hamburger"
+                  width={25}
+                  height={25}
+                  className={` ${isDarkMode ? "hover:bg-white-2" : "hover:bg-gray-50"} rounded-full cursor-pointer p-1`}
+                  onClick={() => setShowSideBar(!showSideBar)} />
+              </div>
+              <div className="overflow-y-scroll no-scrollbar">
+                {docName !== "" ? (
+                  <FileStructureTree
+                    onSelect={(path: SetStateAction<string>) => setSeletedPath(path)}
+                    pId={project}
+                    searchSelectedPath={searchSelectedPath}
+                    searchResult={searchResult}
+                    setSearchResult={setSearchResult}
+                    docName={docName ? docName : docName}
+                    isDarkMode={isDarkMode}
+                    bgcolor={selectedThemeEnhancer} />
                 ) : ""}
               </div>
-            )}
-          </div>
-
-          <div
-            ref={termBox}
-            className={`terminal-container relative ${selectedTabPath ? "mt-8" : ""} ${showTerminal ? "" : "terminal-closed h-24"}`}
-            style={{ borderTop: isDarkMode ? "0.5px solid rgba(255, 255, 255, 0.4)" : "0.5px solid rgba(0, 0, 0, 0.4)" }}
-          >
-            <div
-              ref={termBoxTop}
-              className=" rt absolute top-0 left-0 w-full cursor-row-resize h-1 hover:h-[2px] hover:bg-orange-1"
-              style={{ cursor: 'row-resize' }}
-            ></div>
-            <div className={`w-full ${isDarkMode ? "text-white-1" : "text-black-1"} ${selectedThemeEnhancer} flex justify-between items-center px-5 ${showTerminal ? 'py-2' : "py-0"}`}>
-              <p className="" style={{ fontSize: "11px", letterSpacing: "1px" }}>TERMINAL</p>
-              <div className="flex gap-2">
-                <p className={`cursor-pointer`} style={{ fontSize: "20px" }} onClick={() => {
-                  setTerminalNumber(terminalNumber + 1);
-                  setTerminal([...terminal, terminalNumber + 1]);
-                  setCurrentTerminal(terminalNumber + 1);
-                }}>
-                  {showTerminal ? '+' : ''}
-                </p>
-                <p className={`${showTerminal ? "-mt-2" : "mt-0"} cursor-pointer`} style={{ fontSize: "20px" }} onClick={() => setShowTerminal(!showTerminal)}>
-                  {showTerminal ? '⌄' : '˄'}
-                </p>
-              </div>
-            </div>
-            {showTerminal && project ? (
-              <>
-                {terminal.map((term) => (
-                  <div className={`${term === currentTerminal ? "flex justify-between" : "hidden"}`}>
-                    <Terminal pId={project} isDarkMode={isDarkMode} bgcolor={selectedThemeEnhancer} tId={term} />
-                    <div className="flex flex-col gap-2 border-l-2 w-32 py-2" style={{ borderLeft: "0.4px solid rgba(255, 255, 255, 0.4)" }}>
-                      {terminal.map((term) => (
-                        <div className="px-2 py-1/2" style={{ backgroundColor: `${term === currentTerminal ? "rgb(255, 255, 255, 0.2)" : "none"}`, borderLeft: `${term === currentTerminal ? "2px solid rgba(2, 120, 212, 1)" : "none"}` }}>
-                          <div className="flex gap-2">
-                            <Image src={'/icons/terminal-window-light.svg'} width={20} height={20} alt="terminal image" />
-                            <TerminalTabs setCurrentTerminal={setCurrentTerminal} index={term} isActive={term === currentTerminal} />
-                          </div>
-                        </div>
+            </div><div
+              ref={resizerRef}
+              className="resizer hover:bg-orange-1 w-1"
+              style={{
+                cursor: 'col-resize',
+              }} />
+            <div className="code-container w-full flex flex-col justify-between h-[96vh]">
+              <div className={`h-full editor ${selectedThemeEnhancer}`}>
+                {selectedTabPath && (
+                  <div className="h-full">
+                    <div className={`tabs-section w-[100%] ${selectedThemeEnhancer} flex overflow-x-scroll no-scrollbar`}>
+                      {allPaths.map((paths: any, index: number) => (
+                        <>
+                          {paths !== "" ?
+                            <Tabs filePath={paths} isActive={paths === selectedTabPath} setSelectedTabPath={setSelectedTabPath} setSeletedPath={setSeletedPath} index={index} handleRemoveTab={handleRemoveTab} isDarkMode={isDarkMode} bgcolor={selectedThemeEnhancer} /> : ""}
+                        </>
                       ))}
                     </div>
+                    {selectedTabPath ? (
+                      <CodeEditor path={selectedTabPath} pId={project} selectedTheme={selectedTheme} />
+                    ) : ""}
                   </div>
-                ))}
-              </>
-            ) : ""}
-          </div>
-        </div></>)}
+                )}
+              </div>
+
+              <div
+                ref={termBox}
+                className={`terminal-container relative ${selectedTabPath ? "mt-8" : ""} ${showTerminal ? "" : "terminal-closed h-24"}`}
+                style={{ borderTop: isDarkMode ? "0.5px solid rgba(255, 255, 255, 0.4)" : "0.5px solid rgba(0, 0, 0, 0.4)" }}
+              >
+                <div
+                  ref={termBoxTop}
+                  className=" rt absolute top-0 left-0 w-full cursor-row-resize h-1 hover:h-[2px] hover:bg-orange-1"
+                  style={{ cursor: 'row-resize' }}
+                ></div>
+                <div className={`w-full ${isDarkMode ? "text-white-1" : "text-black-1"} ${selectedThemeEnhancer} flex justify-between items-center px-5 ${showTerminal ? 'py-2' : "py-0"}`}>
+                  <p className="" style={{ fontSize: "11px", letterSpacing: "1px" }}>TERMINAL</p>
+                  <div className="flex gap-2">
+                    <p className={`cursor-pointer`} style={{ fontSize: "20px" }} onClick={() => {
+                      setTerminalNumber(terminalNumber + 1);
+                      setTerminal([...terminal, terminalNumber + 1]);
+                      setCurrentTerminal(terminalNumber + 1);
+                    }}>
+                      {showTerminal ? '+' : ''}
+                    </p>
+                    <p className={`${showTerminal ? "-mt-2" : "mt-0"} cursor-pointer`} style={{ fontSize: "20px" }} onClick={() => setShowTerminal(!showTerminal)}>
+                      {showTerminal ? '⌄' : '˄'}
+                    </p>
+                  </div>
+                </div>
+                {showTerminal && project ? (
+                  <>
+                    {terminal.map((term) => (
+                      <div className={`${term === currentTerminal ? "flex justify-between" : "hidden"}`}>
+                        <Terminal pId={project} isDarkMode={isDarkMode} bgcolor={selectedThemeEnhancer} tId={term} />
+                        <div className="flex flex-col gap-2 border-l-2 w-32 py-2" style={{ borderLeft: "0.4px solid rgba(255, 255, 255, 0.4)" }}>
+                          {terminal.map((term) => (
+                            <div className="px-2 py-1/2" style={{ backgroundColor: `${term === currentTerminal ? "rgb(255, 255, 255, 0.2)" : "none"}`, borderLeft: `${term === currentTerminal ? "2px solid rgba(2, 120, 212, 1)" : "none"}` }}>
+                              <div className="flex gap-2">
+                                <Image src={'/icons/terminal-window-light.svg'} width={20} height={20} alt="terminal image" />
+                                <TerminalTabs setCurrentTerminal={setCurrentTerminal} index={term} isActive={term === currentTerminal} />
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </>
+                ) : ""}
+              </div>
+            </div></>)}
 
         {/* Right Sidebar */}
 
@@ -1208,9 +1236,8 @@ const Page = ({ params }: { params: { id: string } }) => {
               top: 0,
             }}
           />
-          <div className={`sidebar-content ${window.innerWidth <= 768 ? "hidden" : ""}`} style={{ paddingLeft: '5px' }}>
-            <p>Sidebar Item 1</p>
-            <p>Sidebar Item 2</p>
+          <div className="sidebar-content" style={{ paddingLeft: '5px' }}>
+            <p className="m-4" style={{ fontSize: "1.2rem" }}>In-editor Chats</p>
           </div>
         </div>
 
