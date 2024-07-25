@@ -513,6 +513,8 @@ const Page = ({ params }: { params: { id: string } }) => {
     setSelectedTabPath(selectedPath);
   }, [selectedPath]);
 
+
+  
   useEffect(() => {
     setSelectedTabPath(allPaths[allPaths.length - 1]);
   }, [allPaths]);
