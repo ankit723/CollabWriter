@@ -11,14 +11,14 @@ export default function RootLayout({
         
         <section className="flex min-h-screen flex-1 flex-col">
           <div className="mx-auto flex w-full flex-col">
-            <div className="flex h-16 items-center justify-between md:hidden">
+            {/* <div className="flex h-16 items-center justify-between md:hidden">
               <Image 
                 src="/icons/logo.png"
                 width={30}
                 height={30}
                 alt="menu icon"
               />
-            </div>
+            </div> */}
             <div className="flex flex-col">
               {children}
             </div>
