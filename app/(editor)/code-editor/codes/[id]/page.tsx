@@ -529,9 +529,6 @@ const Page = ({ params }: { params: { id: string } }) => {
 
   return (
     <div className={`custom-scrollbar fixed w-screen ${selectedThemeEnhancer}`}>
-
-
-
     
       { isMobileView ?
         <div className={`absolute bg-transparent top-1.5 ml-1 z-10 cursor-pointer ${!showSideBar ? "block" : "hidden"}`} onClick={() => setShowSideBar(!showSideBar)}>
