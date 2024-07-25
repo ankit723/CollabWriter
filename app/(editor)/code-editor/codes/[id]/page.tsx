@@ -105,7 +105,7 @@ const Page = ({ params }: { params: { id: string } }) => {
   const termBoxTop = useRef(null);
   const settingsRef = useRef<HTMLDivElement | null>(null);
 
-  const [rightSidebarWidth, setRightSidebarWidth] = useState(isMobileView ? 250 : 350);
+  const [rightSidebarWidth, setRightSidebarWidth] = useState(250);
   const rightSidebarRef = useRef<HTMLDivElement | null>(null);
   const rightResizerRef = useRef<HTMLDivElement | null>(null);
 
@@ -467,30 +467,30 @@ const Page = ({ params }: { params: { id: string } }) => {
 
 
 
-  const handleRunCode = () => {
-    const fileName = selectedPath.split('/').pop()
-    const extention = selectedPath.split('.').pop()
-    let runCommand = ""
-    switch (extention) {
+  const handleRunCode=()=>{
+    const fileName=selectedPath.split('/').pop()
+    const extention=selectedPath.split('.').pop()
+    let runCommand=""
+    switch(extention){
       case "js":
-        runCommand = `node ${fileName}`
+        runCommand=`node ${fileName}`
         break;
       case "py":
-        runCommand = `python3 ${fileName}`
+        runCommand=`python3 ${fileName}`
         break;
       case "c":
-        runCommand = `gcc ${fileName}`
+        runCommand=`gcc ${fileName}`
         break;
       case "c++":
-        runCommand = `g++ ${fileName}`
+        runCommand=`g++ ${fileName}`
         break;
       case "cpp":
-        runCommand = `g++ ${fileName}`
+        runCommand=`g++ ${fileName}`
         break;
     }
-    runCommand = runCommand + '\r';
+    runCommand=runCommand+'\r';
     console.log(fileName, extention, runCommand, project, currentTerminal)
-    ws.send(JSON.stringify({ type: "terminal:write", data: runCommand, projectId: project, terminalId: currentTerminal }))
+    ws.send(JSON.stringify({type:"terminal:write", data:runCommand, projectId: project, terminalId:currentTerminal}))
   }
 
 
@@ -710,7 +710,10 @@ const Page = ({ params }: { params: { id: string } }) => {
           )}
         </div>
 
-        <div className='flex items-center justify-end space-x-2 sm:space-x-4'>
+
+        <div className={`flex items-center justify-end ${isMobileView? 'space-x-2':"space-x-4"}`}>
+          <Image src={"/icons/Play.svg"} alt="Modes" className={`w-4 h-4 ${isMobileView? 'mx-2':'mx-4'} cursor-pointer`} width={24} height={24} onClick={()=>handleRunCode()}/>
+
           <Image
             src={isDarkMode ? '/icons/dark-theme.svg' : '/icons/light-theme.svg'}
             alt='Modes'
@@ -1059,7 +1062,7 @@ const Page = ({ params }: { params: { id: string } }) => {
             }}
           />
           <div className="sidebar-content" style={{ paddingLeft: '5px' }}>
-            <p className="m-4" style={{ fontSize: "1.2rem" }}>In-editor Chats</p>
+            <p className="m-4" style={{fontSize:"1.2rem"}}>In-editor Chats</p>
           </div>
         </div>
 
