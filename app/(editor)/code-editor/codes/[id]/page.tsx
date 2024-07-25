@@ -74,11 +74,13 @@ const Page = ({ params }: { params: { id: string } }) => {
     const savedTheme = localStorage.getItem('editorTheme');
     return savedTheme || 'monokai';
   });
+
   const [showThemeList, setShowThemeList] = useState(false);
   const [showThemeEnhancer, setShowThemeEnhancer] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(() =>
     typeof window !== 'undefined' ? localStorage.getItem('theme') === 'dark' : false
   );
+
   const [selectedThemeEnhancer, setselectedShowThemeEnhancer] = useState<any>(() => {
     const storedEnhancer = localStorage.getItem('themeenhancer');
     if (storedEnhancer) {
@@ -86,6 +88,7 @@ const Page = ({ params }: { params: { id: string } }) => {
     }
     return isDarkMode ? 'black-1' : 'light-1';
   });
+
   const [showThemeManager, setShowThemeManager] = useState(false);
   const [searchSelectedTheme, setSearchSeletedTheme] = useState<string>("");
   const [searchSelectedThemeEnhancer, setSearchSeletedThemeEnhancer] = useState<string>("");
@@ -118,7 +121,6 @@ const Page = ({ params }: { params: { id: string } }) => {
     setSelectedTheme(newTheme);
     localStorage.setItem('editorTheme', newTheme);
   };
-
 
   useEffect(() => {
     const savedTheme = localStorage.getItem('editorTheme');
@@ -514,7 +516,7 @@ const Page = ({ params }: { params: { id: string } }) => {
   }, [selectedPath]);
 
 
-  
+
   useEffect(() => {
     setSelectedTabPath(allPaths[allPaths.length - 1]);
   }, [allPaths]);
