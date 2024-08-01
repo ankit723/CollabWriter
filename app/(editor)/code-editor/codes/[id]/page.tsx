@@ -108,7 +108,7 @@ const Page = ({ params }: { params: { id: string } }) => {
   const termBoxTop = useRef(null);
   const settingsRef = useRef<HTMLDivElement | null>(null);
 
-  const [rightSidebarWidth, setRightSidebarWidth] = useState(250);
+  const [rightSidebarWidth, setRightSidebarWidth] = useState(350);
   const rightSidebarRef = useRef<HTMLDivElement | null>(null);
   const rightResizerRef = useRef<HTMLDivElement | null>(null);
 
