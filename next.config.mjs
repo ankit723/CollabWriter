@@ -12,6 +12,14 @@ const nextConfig = {
             },
             {
                 protocol: 'https',
+                hostname: 'google.oit.ncsu.edu'
+            },
+            {
+                protocol: 'https',
+                hostname: 'example.com'
+            },
+            {
+                protocol: 'https',
                 hostname: 'encrypted-tbn0.gstatic.com'
             },
             {
