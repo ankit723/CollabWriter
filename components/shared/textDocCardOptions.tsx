@@ -46,7 +46,7 @@ const TextDocCardOptions = ({doc_id, titleProp, descriptionProp, accessEmailsPro
   const handleRemoveDoc=async()=>{
     if(confirm("Are you sure you want to delete the document")){
         await deleteDocument(doc_id)
-        notify("document Deleted") // Notification for the alerting
+        notify("document Deleted") 
     }
     window.location.reload()
   }

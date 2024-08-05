@@ -54,7 +54,7 @@ export async function fetchProject(project_id: string, userId:string="") {
 export async function updateDocumentPermission(doc_id: string, accessEmail: any, isPublic: boolean) {
   try {
     console.log(accessEmail)
-    await connectToDB(); // Ensure the database connection is established
+    await connectToDB(); 
     const doc = await Document.findOneAndUpdate(
       { id: doc_id },
       {allowedUsers:accessEmail},
