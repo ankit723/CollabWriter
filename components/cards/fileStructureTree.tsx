@@ -598,7 +598,7 @@ const FileTreeNode = ({
             </button>
           </div>
           <div className="text-xs text-[#6a737d] mt-[2px]">
-            Press 'Enter' to confirm or 'Esc' to cancel
+            Press &apos;Enter&apos; to confirm or &apos;Esc&apos; to cancel
           </div>
         </div>
       )}

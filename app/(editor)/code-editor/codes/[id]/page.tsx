@@ -860,10 +860,10 @@ const Page = ({ params }: { params: { id: string } }) => {
                   <div className="h-full">
                     <div className={`tabs-section w-[100%] ${selectedThemeEnhancer} flex overflow-x-scroll no-scrollbar`}>
                       {allPaths.map((paths: any, index: number) => (
-                        <>
+                        <div key={index}>
                           {paths !== "" ?
                             <Tabs filePath={paths} isActive={paths === selectedTabPath} setSelectedTabPath={setSelectedTabPath} setSeletedPath={setSeletedPath} index={index} handleRemoveTab={handleRemoveTab} isDarkMode={isDarkMode} bgcolor={selectedThemeEnhancer} /> : ""}
-                        </>
+                        </div>
                       ))}
                     </div>
                     {selectedTabPath ? (
@@ -900,12 +900,12 @@ const Page = ({ params }: { params: { id: string } }) => {
                 </div>
                 {showTerminal && project ? (
                   <>
-                    {terminal.map((term) => (
-                      <div className={`${term === currentTerminal ? "flex justify-between" : "hidden"}`}>
+                    {terminal.map((term, index) => (
+                      <div key={index} className={`${term === currentTerminal ? "flex justify-between" : "hidden"}`}>
                         <Terminal pId={project} isDarkMode={isDarkMode} bgcolor={selectedThemeEnhancer} tId={term} />
                         <div className="flex flex-col gap-2 border-l-2 w-32 py-2" style={{ borderLeft: "0.4px solid rgba(255, 255, 255, 0.4)" }}>
-                          {terminal.map((term) => (
-                            <div className="px-2 py-1/2" style={{ backgroundColor: `${term === currentTerminal ? "rgb(255, 255, 255, 0.2)" : "none"}`, borderLeft: `${term === currentTerminal ? "2px solid rgba(2, 120, 212, 1)" : "none"}` }}>
+                          {terminal.map((term, index) => (
+                            <div key={index} className="px-2 py-1/2" style={{ backgroundColor: `${term === currentTerminal ? "rgb(255, 255, 255, 0.2)" : "none"}`, borderLeft: `${term === currentTerminal ? "2px solid rgba(2, 120, 212, 1)" : "none"}` }}>
                               <div className="flex gap-2">
                                 <Image src={'/icons/terminal-window-light.svg'} width={20} height={20} alt="terminal image" />
                                 <TerminalTabs setCurrentTerminal={setCurrentTerminal} index={term} isActive={term === currentTerminal} />
@@ -971,10 +971,10 @@ const Page = ({ params }: { params: { id: string } }) => {
                   <div className="h-full">
                     <div className={`tabs-section w-[100%] ${selectedThemeEnhancer} flex overflow-x-scroll no-scrollbar`}>
                       {allPaths.map((paths: any, index: number) => (
-                        <>
+                        <div key={index}>
                           {paths !== "" ?
                             <Tabs filePath={paths} isActive={paths === selectedTabPath} setSelectedTabPath={setSelectedTabPath} setSeletedPath={setSeletedPath} index={index} handleRemoveTab={handleRemoveTab} isDarkMode={isDarkMode} bgcolor={selectedThemeEnhancer} /> : ""}
-                        </>
+                        </div>
                       ))}
                     </div>
                     {selectedTabPath ? (
@@ -1011,12 +1011,12 @@ const Page = ({ params }: { params: { id: string } }) => {
                 </div>
                 {showTerminal && project ? (
                   <>
-                    {terminal.map((term) => (
-                      <div className={`${term === currentTerminal ? "flex justify-between" : "hidden"}`}>
+                    {terminal.map((term, index) => (
+                      <div key={index} className={`${term === currentTerminal ? "flex justify-between" : "hidden"}`}>
                         <Terminal pId={project} isDarkMode={isDarkMode} bgcolor={selectedThemeEnhancer} tId={term} />
                         <div className="flex flex-col gap-2 border-l-2 w-32 py-2" style={{ borderLeft: "0.4px solid rgba(255, 255, 255, 0.4)" }}>
-                          {terminal.map((term) => (
-                            <div className="px-2 py-1/2" style={{ backgroundColor: `${term === currentTerminal ? "rgb(255, 255, 255, 0.2)" : "none"}`, borderLeft: `${term === currentTerminal ? "2px solid rgba(2, 120, 212, 1)" : "none"}` }}>
+                          {terminal.map((term, index) => (
+                            <div key={index} className="px-2 py-1/2" style={{ backgroundColor: `${term === currentTerminal ? "rgb(255, 255, 255, 0.2)" : "none"}`, borderLeft: `${term === currentTerminal ? "2px solid rgba(2, 120, 212, 1)" : "none"}` }}>
                               <div className="flex gap-2">
                                 <Image src={'/icons/terminal-window-light.svg'} width={20} height={20} alt="terminal image" />
                                 <TerminalTabs setCurrentTerminal={setCurrentTerminal} index={term} isActive={term === currentTerminal} />
