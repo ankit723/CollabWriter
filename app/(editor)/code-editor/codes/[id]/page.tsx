@@ -96,10 +96,10 @@ const Page = ({ params }: { params: { id: string } }) => {
   const [filteredThemes, setFilteredThemes] = useState(themes);
 
   const [isExpanded, setIsExpanded] = useState(false);
-  const [isMobileView, setIsMobileView] = useState(window.innerWidth <= 768);
+  const [isMobileView, setIsMobileView] = useState(false);
   const sidebarOnMobileViewRef = useRef<HTMLDivElement | null>(null);
 
-  const [sidebarWidth, setSidebarWidth] = useState(isMobileView ? 250 : 350);
+  const [sidebarWidth, setSidebarWidth] = useState(350);
   const sidebarRef = useRef<HTMLDivElement | null>(null);
   const resizerRef = useRef<HTMLDivElement | null>(null);
 
@@ -178,9 +178,9 @@ const Page = ({ params }: { params: { id: string } }) => {
 
   useEffect(() => {
     const handleResize = () => {
-      if (window.innerWidth <= 768) {
-        setShowSideBar(false);
-      }
+      const mobile = window.innerWidth <= 768;
+      setIsMobileView(mobile);
+      setSidebarWidth(mobile ? 250 : 350);
     };
 
     handleResize();
@@ -190,14 +190,6 @@ const Page = ({ params }: { params: { id: string } }) => {
     return () => {
       window.removeEventListener('resize', handleResize);
     };
-  }, [])
-
-  useEffect(() => {
-    const handleResize = () => {
-      setIsMobileView(window.innerWidth <= 768);
-    };
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
   }, []);
 
   const handleClickOnTitleForMobileDevice = () => {
@@ -1042,7 +1034,7 @@ const Page = ({ params }: { params: { id: string } }) => {
         {/* Right Sidebar */}
 
         <div
-          className={`sidebar h-[96vh] ${window.innerWidth <= 768 ? "hidden" : ""}`}
+          className={`sidebar h-[96vh] ${isMobileView ? "hidden" : ""}`}
           ref={rightSidebarRef}
           style={{
             width: `${rightSidebarWidth}px`,
@@ -1052,7 +1044,7 @@ const Page = ({ params }: { params: { id: string } }) => {
         >
           <div
             ref={rightResizerRef}
-            className={`resizer hover:bg-orange-1 w-1 ${window.innerWidth <= 768 ? "hidden" : ""}`}
+            className={`resizer hover:bg-orange-1 w-1 ${isMobileView ? "hidden" : ""}`}
             style={{
               cursor: 'col-resize',
               height: '100%',

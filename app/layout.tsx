@@ -4,7 +4,7 @@ import "./globals.css";
 import 'devicon/devicon.min.css'; 
 import { ClerkProvider } from "@clerk/nextjs";
 import { dark, neobrutalism } from '@clerk/themes';
-
+import { WebSocketProvider } from "@/providers/WebSocketContext";
 
 const manrope = Manrope({ subsets: ["latin"] });
 export const metadata: Metadata = {
@@ -22,7 +22,9 @@ export default function RootLayout({
     <ClerkProvider appearance={{baseTheme: [dark, neobrutalism]}}>
       <html lang="en">
         <body className={`${manrope.className}`}>
-          {children}
+          <WebSocketProvider>
+            {children}
+          </WebSocketProvider>
         </body>
       </html>
     </ClerkProvider>

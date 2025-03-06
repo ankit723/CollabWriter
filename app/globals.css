@@ -432,3 +432,40 @@ html {
   
 }
 
+@layer base {
+  :root {
+    --background: #ffffff;
+    --foreground: #000000;
+    --accent: #0366d6;
+    --accent-foreground: #ffffff;
+    --border: #e1e4e8;
+    --popover: #ffffff;
+    --popover-foreground: #000000;
+  }
+
+  .dark {
+    --background: #1e1e1e;
+    --foreground: #d4d4d4;
+    --accent: #094771;
+    --accent-foreground: #ffffff;
+    --border: #323232;
+    --popover: #252526;
+    --popover-foreground: #cccccc;
+  }
+}
+
+.context-menu-content {
+  animation: scale-in 0.15s ease-out;
+}
+
+@keyframes scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+

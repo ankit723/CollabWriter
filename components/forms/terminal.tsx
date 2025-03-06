@@ -2,6 +2,7 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { Terminal as XTerminal } from '@xterm/xterm'
 import '@xterm/xterm/css/xterm.css'
+import { useWebSocket } from '@/providers/WebSocketContext'
 
 const themeMap:any={
     "light-1": "#FFFFFF",
@@ -27,13 +28,14 @@ const themeMap:any={
     "black-7": "rgb(24, 24, 24)",
 }
 
-const Terminal = ({ pId, isDarkMode, bgcolor, tId}: any) => {
+const Terminal = ({ pId, isDarkMode, bgcolor, tId }: any) => {
     const [projectId, setProjectId] = useState<any>(pId)
     const [terminalId, setTerminalId] = useState<any>(tId)
-    const terminalRef = useRef<HTMLDivElement | null>(null)
-    const wsRef = useRef<WebSocket | null>(null)
-    const termRef = useRef<XTerminal | null>(null)
+    const [isLoading, setIsLoading] = useState(true)
     const [showTerminal, setShowTerminal] = useState(true)
+    const terminalRef = useRef<HTMLDivElement | null>(null)
+    const termRef = useRef<XTerminal | null>(null)
+    const { socket, isConnected, sendMessage } = useWebSocket()
 
     useEffect(() => {
         console.log(bgcolor)
@@ -41,76 +43,70 @@ const Terminal = ({ pId, isDarkMode, bgcolor, tId}: any) => {
         setTimeout(() => {
             setShowTerminal(true)
         }, 200)
-    }, [isDarkMode,bgcolor])
-
+    }, [isDarkMode, bgcolor])
 
     useEffect(() => {
-        if (showTerminal && terminalRef.current) {
-            if (termRef.current) {
-                termRef.current.dispose()
-                termRef.current = null
-            }
+        if (!showTerminal || !terminalRef.current) return
 
-            const term = new XTerminal({
-                theme: {
-                    background: themeMap[bgcolor],
-                    foreground: isDarkMode ? "#FFFFFF" : "#000000",
-                    cursor: isDarkMode ? "#FFFFFF" : "#000000",
-                    selectionBackground: isDarkMode ? "#FFFFFF3d" : "#0000003d",
-                    selectionForeground: isDarkMode ? "#FFFFFF3d" : "#0000003d",
-                },
-                rows: 14,
-                cols: 88,
-                fontFamily: 'Courier New',
-                fontSize: 14,
+        setIsLoading(true)
+        if (termRef.current) {
+            termRef.current.dispose()
+            termRef.current = null
+        }
+
+        const term = new XTerminal({
+            theme: {
+                background: themeMap[bgcolor],
+                foreground: isDarkMode ? "#FFFFFF" : "#000000",
+                cursor: isDarkMode ? "#FFFFFF" : "#000000",
+                selectionBackground: isDarkMode ? "#FFFFFF3d" : "#0000003d",
+                selectionForeground: isDarkMode ? "#FFFFFF3d" : "#0000003d",
+            },
+            rows: 14,
+            cols: 88,
+            fontFamily: 'Courier New',
+            fontSize: 14,
+        })
+
+        term.open(terminalRef.current)
+        termRef.current = term
+
+        if (term.element) {
+            term.element.style.padding = "20px"
+        }
+
+        Array.from(document.getElementsByClassName('xterm-viewport')).forEach((xterm) => {
+            xterm.classList.add('no-scrollbar')
+        })
+
+        term.onData((data: any) => {
+            if (isConnected) {
+                sendMessage({ 
+                    type: 'terminal:write', 
+                    data, 
+                    projectId, 
+                    terminalId 
+                })
+            }
+        })
+
+        if (isConnected && pId) {
+            sendMessage({ 
+                type: "project:started", 
+                data: { id: pId, tId: tId } 
             })
+        }
 
-            term.open(terminalRef.current)
-            termRef.current = term
-
-            if (term.element) {
-                term.element.style.padding = "20px"
-            }
-
-            // Convert HTMLCollection to an array and iterate over each element
-            Array.from(document.getElementsByClassName('xterm-viewport')).forEach((xterm) => {
-                xterm.classList.add('no-scrollbar');
-            });
-
-
-            term.onData((data: any) => {
-                if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
-                    wsRef.current.send(JSON.stringify({ type: 'terminal:write', data: data, projectId: projectId, terminalId:terminalId }))
-                }
-            })
-
-            wsRef.current = new WebSocket(process.env.NEXT_PUBLIC_SOCKET_BACKEND_URL || 'ws://localhost:5001')
-
-            wsRef.current.onopen = () => {
-                console.log('WebSocket connection established')
-                if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
-                    if (pId) {
-                        wsRef.current?.send(JSON.stringify({ type: "project:started", data: { id: pId, tId: tId } }));
-                    }                
-                }
-                
-            }
-
-            wsRef.current.onmessage = (event) => {
+        if (socket) {
+            socket.onmessage = (event) => {
                 const message = JSON.parse(event.data)
                 if (message.type === 'terminal:data' && message.projectId === projectId) {
                     term.write(message.data)
                 }
             }
-
-            wsRef.current.onclose = () => {
-                console.log('WebSocket connection closed')
-            }
-
-            wsRef.current.onerror = (error) => {
-                console.error('WebSocket error:', error)
-            }
         }
+
+        setIsLoading(false)
 
         return () => {
             if (termRef.current) {
@@ -118,7 +114,7 @@ const Terminal = ({ pId, isDarkMode, bgcolor, tId}: any) => {
                 termRef.current = null
             }
         }
-    }, [projectId, isDarkMode, showTerminal,bgcolor, terminalId])
+    }, [projectId, isDarkMode, showTerminal, bgcolor, terminalId, isConnected, socket, sendMessage, pId, tId])
 
     useEffect(() => {
         setProjectId(pId)
@@ -129,9 +125,23 @@ const Terminal = ({ pId, isDarkMode, bgcolor, tId}: any) => {
     }, [tId])
 
     return (
-        <>
+        <div className="relative">
+            {isLoading && (
+                <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 z-10">
+                    <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-white"></div>
+                </div>
+            )}
+            
+            {!isConnected && (
+                <div className="absolute top-0 right-0 p-2 z-20">
+                    <div className="flex items-center gap-2 text-red-500">
+                        <span>Disconnected</span>
+                    </div>
+                </div>
+            )}
+            
             {showTerminal && <div id='terminal' ref={terminalRef}></div>}
-        </>
+        </div>
     )
 }
 

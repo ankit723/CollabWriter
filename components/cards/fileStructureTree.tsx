@@ -1,6 +1,26 @@
 "use client";
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import 'devicon/devicon.min.css';
+import { useWebSocket } from '@/providers/WebSocketContext';
+import { DndProvider, useDrag, useDrop } from 'react-dnd';
+import { HTML5Backend } from 'react-dnd-html5-backend';
+import { motion, AnimatePresence } from 'framer-motion';
+import { 
+  FolderIcon, FileIcon, ChevronRightIcon, ChevronDownIcon,
+  MoreVerticalIcon, PlusIcon, TrashIcon, EditIcon, FolderPlusIcon
+} from 'lucide-react';
+import { 
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuTrigger,
+  ContextMenuShortcut,
+  ContextMenuSeparator
+} from "@/components/ui/context-menu";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { toast } from 'sonner';
+import { cn } from "@/lib/utils";
 
 const iconMapping: { [key: string]: string } = {
   js: 'devicon-javascript-plain colored',
@@ -19,6 +39,7 @@ const iconMapping: { [key: string]: string } = {
   go: 'devicon-go-plain colored',
   c: 'devicon-c-plain colored',
   cpp: 'devicon-cplusplus-plain colored',
+  'c++': 'devicon-cplusplus-plain colored',
   abap: 'devicon-devicon-plain colored',
   abc: 'devicon-devicon-plain colored',
   actionscript: 'devicon-devicon-plain colored',
@@ -199,324 +220,420 @@ const iconMapping: { [key: string]: string } = {
   zig: 'devicon-devicon-plain colored',
 };
 
+// Add proper TypeScript interfaces
+interface FileTreeNodeProps {
+  fileName: string;
+  nodes: Record<string, any> | null;
+  onSelect: (path: string) => void;
+  path: string;
+  searchSelectedPath: string;
+  setSearchResult: (results: string[]) => void;
+  searchResult: string[];
+  pId: string;
+  newFolderCreatedPath: string | null;
+  setNewFolderCreatedPath: (path: string | null) => void;
+  newFileCreatedPath: string | null;
+  setNewFileCreatedPath: (path: string | null) => void;
+  isDarkMode: boolean;
+  docName: string;
+}
 
-const ws = new WebSocket(
-  process.env.NEXT_PUBLIC_SOCKET_BACKEND_URL || "ws://localhost:5001"
-);
+interface FileStructureTreeProps {
+  onSelect: (path: string) => void;
+  pId: string;
+  searchSelectedPath: string;
+  setSearchResult: (results: string[]) => void;
+  searchResult: string[];
+  docName: string;
+  isDarkMode: boolean;
+}
 
-const FileTreeNode = ({ fileName, nodes, onSelect, path, searchSelectedPath, setSearchResult, searchResult, pId, newFolderCreatedPath, setNewFolderCreatedPath, newFileCreatedPath, setNewFileCreatedPath, isDarkMode,bgcolor }: any) => {
-  console.log(bgcolor)
+// File type for drag and drop
+const ItemTypes = {
+  FILE: 'file',
+  FOLDER: 'folder'
+};
+
+const FileTreeNode = ({ 
+  fileName, 
+  nodes, 
+  onSelect, 
+  path, 
+  searchSelectedPath, 
+  setSearchResult, 
+  searchResult, 
+  pId,
+  docName,
+  isDarkMode,
+  newFolderCreatedPath,
+  setNewFolderCreatedPath,
+  newFileCreatedPath,
+  setNewFileCreatedPath
+}: FileTreeNodeProps) => {
+  const { sendMessage } = useWebSocket();
   const [isExpanded, setIsExpanded] = useState(false);
-  const [menuStyle, setMenuStyle] = useState<any>({ display: "none", top: 0, left: 0, });
-  const [folderMenuStyle, setFolderMenuStyle] = useState<any>({ display: "none", top: 0, left: 0, });
   const [isRenaming, setIsRenaming] = useState(false);
-  const [isFolderRenaming, setIsFolderRenaming] = useState(false);
-  const [newFileName, setNewFileName] = useState(fileName);
-  const [newFolderName, setNewFolderName] = useState(fileName);
-  const menuRef = useRef<HTMLDivElement | null>(null);
-  const folderMenuRef = useRef<HTMLDivElement | null>(null);
-  
-
+  const [newName, setNewName] = useState(fileName);
+  const [isCreatingNew, setIsCreatingNew] = useState<'file' | 'folder' | null>(null);
+  const [newItemName, setNewItemName] = useState('');
+  const inputRef = useRef<HTMLInputElement>(null);
   const isFolder = nodes !== null;
-  const fileExtension = newFileName.split('.').pop();
-
   
-  useEffect(() => {
-    if (searchSelectedPath === "") {
-      setSearchResult([]);
+  // Clean path for file selection (ONLY the actual path)
+  const selectPath = path 
+    ? path.replace(`user/${pId}`, '')
+         .replace(`${pId}`, '')
+         .replace(`${docName}`, '')
+         .replace(/^\/+/, '') + `/${fileName}`
+    : fileName === docName ? '' : fileName;
+
+  // Path for file operations with user/pId prefix
+  const operationPath = path 
+    ? `user/${pId}${selectPath}`
+    : fileName === docName 
+      ? `user/${pId}` 
+      : `user/${pId}/${fileName}`;
+
+  // For debugging
+  console.log({
+    fileName,
+    path,
+    operationPath,
+    selectPath,
+    pId,
+    docName
+  });
+
+  // Drag and Drop setup
+  const [{ isDragging }, drag] = useDrag(() => ({
+    type: isFolder ? ItemTypes.FOLDER : ItemTypes.FILE,
+    item: { type: isFolder ? ItemTypes.FOLDER : ItemTypes.FILE, path: operationPath },
+    collect: (monitor) => ({
+      isDragging: monitor.isDragging(),
+    }),
+  }));
+
+  const [{ isOver }, drop] = useDrop(() => ({
+    accept: [ItemTypes.FILE, ItemTypes.FOLDER],
+    drop: (item: { type: string; path: string }, monitor) => {
+      if (monitor.didDrop()) return;
+      handleDrop(item);
+    },
+    collect: (monitor) => ({
+      isOver: monitor.isOver({ shallow: true }),
+    }),
+  }), [operationPath]);
+
+  const handleDrop = async (item: { type: string; path: string }) => {
+    if (item.path === operationPath || item.path.startsWith(`${operationPath}/`)) return;
+    
+    try {
+      const newPath = `${operationPath}/${item.path.split('/').pop()}`;
+      await sendMessage({
+        type: 'file:move',
+        data: {
+          oldPath: item.path,
+          newPath,
+          pId
+        }
+      });
+      toast.success('Item moved successfully');
+    } catch (error) {
+      toast.error('Failed to move item');
     }
-    if (searchSelectedPath !== "") {
+  };
+
+  // Combine drag and drop refs
+  const dragDropRef = useCallback((node: HTMLDivElement) => {
+    drag(node);
+    drop(node);
+  }, [drag, drop]);
+
+  const handleRename = async () => {
+    if (newName === fileName || !newName.trim()) {
+      setIsRenaming(false);
+      return;
+    }
+
+    try {
+      const oldPath = operationPath;
+      const newPath = path ? `${path}/${newName}` : `${pId}/${newName}`;
+      
+      await sendMessage({
+        type: 'file:rename',
+        data: { oldPath, newPath, pId }
+      });
+      
+      setIsRenaming(false);
+      toast.success('Renamed successfully');
+    } catch (error) {
+      toast.error('Failed to rename');
+      setNewName(fileName);
+    }
+  };
+
+  const handleDelete = async () => {
+    try {
+      await sendMessage({
+        type: isFolder ? 'folder:delete' : 'file:delete',
+        data: { filePath: operationPath, pId }
+      });
+      toast.success('Deleted successfully');
+    } catch (error) {
+      toast.error('Failed to delete');
+    }
+  };
+
+  const handleCreateNew = async (type: 'file' | 'folder') => {
+    if (!newItemName.trim()) {
+      setIsCreatingNew(null);
+      return;
+    }
+
+    try {
+      const newPath = `${operationPath}/${newItemName}`;
+      await sendMessage({
+        type: type === 'file' ? 'file:create' : 'folder:create',
+        data: { filePath: newPath }
+      });
+      
+      setIsCreatingNew(null);
+      setNewItemName('');
       setIsExpanded(true);
-    }
-    if (path.includes(searchSelectedPath) && !isFolder) {
-      if (!searchResult.includes(path)) {
-        setSearchResult([...searchResult, path]);
+      if (type === 'file') {
+        setNewFileCreatedPath(`${selectPath}/${newItemName}`);
+      } else {
+        setNewFolderCreatedPath(`${selectPath}/${newItemName}`);
       }
-      if (searchSelectedPath === "") {
-        setSearchResult([]);
-      }
-    }
-
-    return () => {
-      if (searchSelectedPath === "") {
-        setIsExpanded(false);
-      }
-    };
-  }, [searchSelectedPath]);
-
-  const toggleExpansion = () => {
-    setIsExpanded(!isExpanded);
-  };
-
-  const handleRightClick = (event: any, filePath: any) => {
-    event.preventDefault();
-    setMenuStyle({
-      display: "block",
-      top: event.clientY,
-      left: event.clientX,
-    });
-  };
-
-  const handleFolderRightClick = (event: any, filePath: any) => {
-    event.preventDefault();
-    setFolderMenuStyle({
-      display: "block",
-      top: event.clientY,
-      left: event.clientX,
-    });
-  };
-
-  const handleMenuClick = (action: any, filePath: any) => {
-    console.log(action, filePath);
-    switch (action) {
-      case "rename":
-        setIsRenaming(true);
-        break;
-      case "delete":
-        console.log("Delete", filePath);
-        handleDeleteFile(filePath);
-        break;
-      default:
-        break;
+      toast.success(`${type === 'file' ? 'File' : 'Folder'} created successfully`);
+    } catch (error) {
+      toast.error('Failed to create');
     }
   };
 
-  const handleFolderMenuClick = (action: any, filePath: any) => {
-    console.log(action, filePath);
-    switch (action) {
-      case "rename":
-        setIsFolderRenaming(true);
-        break;
-      case "delete":
-        console.log("Delete", filePath);
-        handleDeleteFolder(filePath);
-        break;
-      case "create-folder":
-        console.log("Delete", filePath);
-        handleCreateFolder(filePath);
-        break;
-      case "create-file":
-        console.log("Delete", filePath);
-        handleCreateFile(filePath);
-        break;
-      default:
-        break;
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>, type: 'file' | 'folder') => {
+    if (e.key === 'Enter') {
+      handleCreateNew(type);
+    } else if (e.key === 'Escape') {
+      setIsCreatingNew(null);
+      setNewItemName('');
     }
   };
-
-  const handleCreateFile = (filePath: string) => {
-    ws.send(JSON.stringify({ type: "file:create", data: { filePath: `user/${pId}${filePath}/new-file` } }));
-    setNewFileCreatedPath(`${filePath}/new-file`)
-  }
-
-  const handleCreateFolder = (filePath: string) => {
-    ws.send(JSON.stringify({ type: "folder:create", data: { filePath: `user/${pId}${filePath}/new-folder` } }));
-    setNewFolderCreatedPath(`${filePath}/new-folder`)
-  }
-
-  const handleDeleteFile = (filePath: string) => {
-    ws.send(
-      JSON.stringify({
-        type: "file:delete",
-        data: { filePath: `user/${pId}${filePath}` },
-      })
-    );
-  };
-
-  const handleDeleteFolder = (filePath: string) => {
-    ws.send(
-      JSON.stringify({
-        type: "folder:delete",
-        data: { filePath: `user/${pId}${filePath}` },
-      })
-    );
-  };
-
-  const handleRename = (path: any) => {
-    let dupPath = path;
-    let newPath = dupPath.replace(fileName, newFileName);
-    console.log(`user/${pId}${path}`);
-    console.log(`user/${pId}${newPath}`);
-    if (pId) {
-      ws.send(
-        JSON.stringify({
-          type: "file:rename",
-          data: {
-            oldPath: `user/${pId}${path}`,
-            newPath: `user/${pId}${newPath}`,
-          },
-        })
-      );
-    }
-    setIsRenaming(false);
-
-  };
-
-  const handleFolderRename = (path: any) => {
-    let dupPath = path;
-    let newPath = dupPath.replace(fileName, newFolderName);
-    console.log(`user/${pId}${path}`);
-    console.log(`user/${pId}${newPath}`);
-    if (pId) {
-      ws.send(
-        JSON.stringify({
-          type: "file:rename",
-          data: {
-            oldPath: `user/${pId}${path}`,
-            newPath: `user/${pId}${newPath}`,
-          },
-        })
-      );
-    }
-    setIsFolderRenaming(false);
-  };
-
-  const handleClick = () => {
-    setMenuStyle({ display: "none" });
-    setFolderMenuStyle({ display: "none" });
-  };
-
-  useEffect(() => {
-    if (path === newFolderCreatedPath) {
-      handleFolderMenuClick('rename', newFolderCreatedPath)
-    }
-  }, [newFolderCreatedPath])
-
-  useEffect(() => {
-    if (path === newFileCreatedPath) {
-      handleMenuClick('rename', newFileCreatedPath)
-    }
-  }, [newFileCreatedPath])
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (menuRef.current && !(event.target instanceof Node && menuRef.current.contains(event.target))) {
-        setMenuStyle({ display: "none" });
-      }
-      if (folderMenuRef.current && !(event.target instanceof Node && folderMenuRef.current.contains(event.target))) {
-        setFolderMenuStyle({ display: "none" });
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, []);
-
 
   return (
-    <div
-      className={`bg-${bgcolor}`}
-      style={{ marginLeft: "17px", position: "relative" }}
-      onClick={handleClick}
-    >
-      {isFolder && fileName != "node_modules" ? (
-        <div style={{ borderLeft: isDarkMode ? "0.1px solid #7e7e7e" : "0.1px solid #7e7e7e" }}>
-          {isFolderRenaming ? (
-            <input
-              type="text"
-              value={newFolderName}
-              onChange={(e) => setNewFolderName(e.target.value)}
-              onBlur={() => handleFolderRename(path)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  handleFolderRename(path);
-                }
-              }}
-              className={`bg-white-1 text-black-1`}
-              autoFocus
-            />
-          ) : (
-            <span
-              className={`hover:text-blue font-thin text-small-regular ${isDarkMode ?'text-white-1': 'text-black-1' }`}
-              onClick={toggleExpansion}
-              style={{ cursor: 'pointer' }}
-              onContextMenu={(e) => handleFolderRightClick(e, path)}
-            >
-              <span className="pr-2" style={{ fontSize: '10px' }}>
-                {isExpanded ? '▼ 📂' : '▶ 📁'}
-              </span>
-              {newFolderName}
-            </span>
+    <motion.div className="relative">
+      <ContextMenu>
+        <ContextMenuTrigger>
+          <div
+            ref={dragDropRef}
+            className={cn(
+              "flex items-center py-[1px] px-[2px] rounded-none group relative",
+              isDarkMode 
+                ? "hover:bg-[#37373d]" 
+                : "hover:bg-[#f0f0f0]",
+              "cursor-pointer select-none",
+              isOver && (isDarkMode ? "bg-[#2a2d2e]" : "bg-[#e8e8e8]"),
+              isDragging && "opacity-50",
+              searchSelectedPath === selectPath && fileName !== docName && 
+                cn(
+                  "before:absolute before:left-0 before:top-0 before:h-full before:w-[2px]",
+                  isDarkMode 
+                    ? "bg-[#37373d] before:bg-[#0078d4]" 
+                    : "bg-[#e8e8e8] before:bg-[#0366d6]"
+                )
+            )}
+            onClick={() => isFolder ? setIsExpanded(!isExpanded) : onSelect(selectPath)}
+          >
+            <div className="flex items-center gap-[6px] w-full">
+              {isFolder && (
+                <ChevronRightIcon
+                  size={16}
+                  className={cn(
+                    "transition-transform shrink-0",
+                    isExpanded && "transform rotate-90"
+                  )}
+                />
+              )}
+              
+              {isFolder ? (
+                <FolderIcon size={16} className="text-[#dcb67a] shrink-0" />
+              ) : (
+                <span className="shrink-0">
+                  {iconMapping[fileName.split('.').pop() || ''] ? (
+                    <i className={`${iconMapping[fileName.split('.').pop() || '']} text-[16px]`} />
+                  ) : (
+                    <FileIcon size={16} className="text-[#8a8a8a]" />
+                  )}
+                </span>
+              )}
 
-          )
-          }
-          {isExpanded && (
-            <ul style={{ listStyleType: "none" }}>
-              {Object.keys(nodes).map((child) => (
-                <li key={child} style={{ lineHeight: "20px" }}>
-                  <FileTreeNode
-                    fileName={child}
-                    nodes={nodes[child]}
-                    onSelect={onSelect}
-                    path={`${path}/${child}`}
-                    searchSelectedPath={searchSelectedPath}
-                    setSearchResult={setSearchResult}
-                    searchResult={searchResult}
-                    pId={pId}
-                    newFolderCreatedPath={newFolderCreatedPath}
-                    setNewFolderCreatedPath={setNewFolderCreatedPath}
-                    newFileCreatedPath={newFileCreatedPath}
-                    setNewFileCreatedPath={setNewFileCreatedPath}
-                    isDarkMode={isDarkMode}
-                  />
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-      ) : (
-        <>
-          {fileName !== "node_modules" ? (
-            <div className="">
               {isRenaming ? (
-                <input
-                  type="text"
-                  value={newFileName}
-                  onChange={(e) => setNewFileName(e.target.value)}
-                  onBlur={() => handleRename(path)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      handleRename(path);
-                    }
-                  }}
-                  className={`bg-white-1 text-black-1`}
+                <Input
+                  ref={inputRef}
+                  value={newName}
+                  onChange={(e) => setNewName(e.target.value)}
+                  onBlur={handleRename}
+                  onKeyDown={(e) => e.key === 'Enter' && handleRename()}
+                  className="h-5 py-0 px-1"
                   autoFocus
                 />
               ) : (
-                <span
-                  className="cursor-pointer font-thin text-small-regular hover:text-blue"
-                  onClick={() => onSelect(path)}
-                  onContextMenu={(e) => handleRightClick(e, path)}
-                >
-                  <span className="pr-2" style={{ width: '15px', height: '15px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
-                    {/* 📄 {/*path crop image from object  */}
-                    <i className={iconMapping[fileName.split(".").pop() as string]}></i>
-                  </span>
-                  {newFileName}
-                </span>
+                <span className="truncate text-sm">{fileName}</span>
               )}
             </div>
-          ) : (
-            ""
+          </div>
+        </ContextMenuTrigger>
+
+        <ContextMenuContent 
+          className={cn(
+            "min-w-[180px] p-[4px] rounded-none",
+            isDarkMode 
+              ? "bg-[#252526] border-[#323232] text-[#cccccc]" 
+              : "bg-[#ffffff] border-[#e1e4e8] text-[#24292e]",
+            "border shadow-lg"
           )}
-        </>
+        >
+          <ContextMenuItem 
+            className={cn(
+              "flex items-center px-2 py-1 text-sm rounded-sm",
+              isDarkMode
+                ? "hover:bg-[#37373d] focus:bg-[#37373d]"
+                : "hover:bg-[#f0f0f0] focus:bg-[#f0f0f0]",
+              "cursor-pointer"
+            )}
+            onClick={() => setIsRenaming(true)}
+          >
+            <EditIcon size={14} className="mr-2" />
+            <span className="flex-grow">Rename</span>
+            <ContextMenuShortcut className="text-xs text-muted-foreground ml-auto">
+              F2
+            </ContextMenuShortcut>
+          </ContextMenuItem>
+
+          <ContextMenuItem 
+            className={cn(
+              "flex items-center px-2 py-1 text-sm rounded-sm",
+              "hover:bg-[#f0f0f0] dark:hover:bg-[#37373d]",
+              "focus:bg-[#f0f0f0] dark:focus:bg-[#37373d]",
+              "cursor-pointer text-red-600 dark:text-red-400"
+            )}
+            onClick={handleDelete}
+          >
+            <TrashIcon size={14} className="mr-2" />
+            <span className="flex-grow">Delete</span>
+            <ContextMenuShortcut className="text-xs text-muted-foreground ml-auto">
+              Del
+            </ContextMenuShortcut>
+          </ContextMenuItem>
+
+          {isFolder && (
+            <>
+              <ContextMenuSeparator className="my-1 h-[1px] bg-[#e1e4e8] dark:bg-[#323232]" />
+              <ContextMenuItem 
+                className={cn(
+                  "flex items-center px-2 py-1 text-sm rounded-sm",
+                  "hover:bg-[#f0f0f0] dark:hover:bg-[#37373d]",
+                  "focus:bg-[#f0f0f0] dark:focus:bg-[#37373d]",
+                  "cursor-pointer"
+                )}
+                onClick={() => setIsCreatingNew('file')}
+              >
+                <PlusIcon size={14} className="mr-2" />
+                <span className="flex-grow">New File</span>
+                <ContextMenuShortcut className="text-xs text-muted-foreground ml-auto">
+                  Ctrl+N
+                </ContextMenuShortcut>
+              </ContextMenuItem>
+
+              <ContextMenuItem 
+                className={cn(
+                  "flex items-center px-2 py-1 text-sm rounded-sm",
+                  "hover:bg-[#f0f0f0] dark:hover:bg-[#37373d]",
+                  "focus:bg-[#f0f0f0] dark:focus:bg-[#37373d]",
+                  "cursor-pointer"
+                )}
+                onClick={() => setIsCreatingNew('folder')}
+              >
+                <FolderPlusIcon size={14} className="mr-2" />
+                <span className="flex-grow">New Folder</span>
+                <ContextMenuShortcut className="text-xs text-muted-foreground ml-auto">
+                  Ctrl+Shift+N
+                </ContextMenuShortcut>
+              </ContextMenuItem>
+            </>
+          )}
+        </ContextMenuContent>
+      </ContextMenu>
+
+      {isCreatingNew && (
+        <div className="ml-[24px] mt-[1px]">
+          <div className="flex items-center gap-1">
+            <Input
+              value={newItemName}
+              onChange={(e) => setNewItemName(e.target.value)}
+              onBlur={() => handleCreateNew(isCreatingNew)}
+              onKeyDown={(e) => handleKeyDown(e, isCreatingNew)}
+              placeholder={`Enter ${isCreatingNew} name...`}
+              className={cn(
+                "h-5 py-0 px-1 text-sm",
+                isDarkMode
+                  ? "bg-[#3c3c3c] border-[#3c3c3c] text-[#cccccc]"
+                  : "bg-[#ffffff] border-[#e1e4e8] text-[#24292e]"
+              )}
+              autoFocus
+            />
+            <button
+              onClick={() => {
+                setIsCreatingNew(null);
+                setNewItemName('');
+              }}
+              className={cn(
+                "text-xs px-2 py-0.5 rounded-sm",
+                isDarkMode
+                  ? "text-[#cccccc] hover:bg-[#37373d]"
+                  : "text-[#24292e] hover:bg-[#f0f0f0]"
+              )}
+            >
+              Cancel
+            </button>
+          </div>
+          <div className="text-xs text-[#6a737d] mt-[2px]">
+            Press 'Enter' to confirm or 'Esc' to cancel
+          </div>
+        </div>
       )}
 
-  <div ref={menuRef}className={`border-black-3 shadow-2xl px-1 py-1 rounded-md right-clicks-modals w-52 bg-${bgcolor} ${isDarkMode?"text-white-3":"text-black-1"}`} style={{...menuStyle,position: "fixed",border: "1px solid black",zIndex: 1000, color:"whitesmoke"}}>
-    <div className="text-small-regular cursor-pointer px-2 py-1/2 hover:bg-orange-1 hover:text-white-1 mb-1 rounded-sm"style={{ cursor: "pointer", fontSize: "13px" }}onClick={() => handleMenuClick("rename", path)}>Rename</div>
-    <div className="text-small-regular cursor-pointer px-2 py-1/2 hover:bg-orange-1 hover:text-white-1 mb-1 rounded-sm"style={{ cursor: "pointer", fontSize: "13px" }}onClick={() => handleMenuClick("delete", path)}>Delete</div>
-  </div>
-
-  <div ref={folderMenuRef}className={`border-black-3 shadow-2xl px-1 py-1 rounded-md right-clicks-modals w-52 bg-${bgcolor} ${isDarkMode?"text-white-3":"text-black-1"}`}style={{...folderMenuStyle,position: "fixed",border: "1px solid black",zIndex: 1000, color:"whitesmoke"}}>
-    <div className="text-small-regular cursor-pointer px-2 py-1/2 hover:bg-orange-1 hover:text-white-1 mb-1 rounded-sm"style={{ cursor: "pointer", fontSize: "13px" }}onClick={() => handleFolderMenuClick("create-folder", path)}>New Folder...</div>
-    <div className="text-small-regular cursor-pointer px-2 py-1/2 hover:bg-orange-1 hover:text-white-1 mb-1 rounded-sm"style={{ cursor: "pointer", fontSize: "13px" }}onClick={() => handleFolderMenuClick("create-file", path)}>New File...</div>
-    <div className="text-small-regular cursor-pointer px-2 py-1/2 hover:bg-orange-1 hover:text-white-1 mb-1 rounded-sm"style={{ cursor: "pointer", fontSize: "13px" }}onClick={() => handleFolderMenuClick("rename", path)}>Rename</div>
-    <div className="text-small-regular cursor-pointer px-2 py-1/2 hover:bg-orange-1 hover:text-white-1 mb-1 rounded-sm"style={{ cursor: "pointer", fontSize: "13px" }}onClick={() => handleFolderMenuClick("delete", path)}>Delete</div>
-  </div>
-
-</div>
+      <AnimatePresence>
+        {isFolder && isExpanded && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            className="ml-[8px]"
+          >
+            {Object.entries(nodes).map(([name, node]) => (
+              <FileTreeNode
+                key={name}
+                fileName={name}
+                nodes={node}
+                onSelect={onSelect}
+                path={operationPath}
+                searchSelectedPath={searchSelectedPath}
+                setSearchResult={setSearchResult}
+                searchResult={searchResult}
+                pId={pId}
+                docName={docName}
+                isDarkMode={isDarkMode}
+                newFolderCreatedPath={newFolderCreatedPath}
+                setNewFolderCreatedPath={setNewFolderCreatedPath}
+                newFileCreatedPath={newFileCreatedPath}
+                setNewFileCreatedPath={setNewFileCreatedPath}
+              />
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.div>
   );
 };
 
@@ -528,49 +645,142 @@ const FileStructureTree = ({
   searchResult,
   docName,
   isDarkMode
-}: any) => {
-  const [tree, setTree] = useState<any>(null);
-  const [newFolderCreatedPath, setNewFolderCreatedPath] = useState<any>(null)
-  const [newFileCreatedPath, setNewFileCreatedPath] = useState<any>(null)
+}: FileStructureTreeProps) => {
+  const [tree, setTree] = useState<Record<string, any> | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [newFolderCreatedPath, setNewFolderCreatedPath] = useState<string | null>(null);
+  const [newFileCreatedPath, setNewFileCreatedPath] = useState<string | null>(null);
+  const { socket } = useWebSocket();
+  const lastRefreshTime = useRef<number>(Date.now());
+  const refreshTimeout = useRef<NodeJS.Timeout | null>(null);
+
+  const fetchFileTree = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://34.68.33.225';
+      const response = await fetch(`${backendUrl}/files?pId=${pId}`);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const fileTree = await response.json();
+      setTree(fileTree);
+      lastRefreshTime.current = Date.now();
+    } catch (err) {
+      console.error("Error fetching file tree:", err);
+      setError(err instanceof Error ? err.message : 'Failed to fetch file tree');
+    } finally {
+      setIsLoading(false);
+    }
+  }, [pId]);
+
+  // Debounced refresh function
+  const debouncedRefresh = useCallback(() => {
+    if (refreshTimeout.current) {
+      clearTimeout(refreshTimeout.current);
+    }
+
+    // Only refresh if enough time has passed since last refresh
+    if (Date.now() - lastRefreshTime.current > 1000) {
+      fetchFileTree();
+    } else {
+      refreshTimeout.current = setTimeout(fetchFileTree, 1000);
+    }
+  }, [fetchFileTree]);
 
   useEffect(() => {
-    async function fetchFileTree() {
-      try {
-        const response = await fetch("http://localhost:5001/files");
-        const fileTree = await response.json();
-        setTree(fileTree);
-      } catch (err) {
-        console.log("error in fetching in the recently changed file", err);
-      }
-    }
     fetchFileTree();
 
-    ws.onmessage = async (event) => {
-      const message = JSON.parse(event.data);
-      if (message.type === "file:refresh") {
-        fetchFileTree();
+    const handleWebSocketMessage = async (event: MessageEvent) => {
+      try {
+        const message = JSON.parse(event.data);
+        if (message.type === "file:refresh") {
+          debouncedRefresh();
+        }
+      } catch (err) {
+        console.error("Error handling WebSocket message:", err);
       }
     };
-  }, []);
+
+    if (socket) {
+      socket.addEventListener('message', handleWebSocketMessage);
+      return () => {
+        socket.removeEventListener('message', handleWebSocketMessage);
+        if (refreshTimeout.current) {
+          clearTimeout(refreshTimeout.current);
+        }
+      };
+    }
+  }, [socket, debouncedRefresh]);
+
+  // Handle file selection
+  const handleFileSelect = useCallback((path: string) => {
+    if (onSelect) {
+      onSelect(path);
+      // Refresh the file tree after a short delay
+      setTimeout(debouncedRefresh, 100);
+    }
+  }, [onSelect, debouncedRefresh]);
+
+  if (isLoading && !tree) {
+    return (
+      <div className="flex items-center justify-center p-4">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="text-red-500 p-4">
+        <p>Error loading file structure: {error}</p>
+        <button 
+          onClick={fetchFileTree}
+          className="mt-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+        >
+          Retry
+        </button>
+      </div>
+    );
+  }
+
+  if (!tree?.tree?.[pId]) {
+    return (
+      <div className="p-4 text-gray-500">
+        No files found
+      </div>
+    );
+  }
 
   return (
-    <div>
-      <FileTreeNode
-        fileName={docName}
-        nodes={tree?.tree[pId]}
-        onSelect={onSelect}
-        path={""}
-        searchSelectedPath={searchSelectedPath}
-        setSearchResult={setSearchResult}
-        searchResult={searchResult}
-        pId={pId}
-        newFolderCreatedPath={newFolderCreatedPath}
-        setNewFolderCreatedPath={setNewFolderCreatedPath}
-        newFileCreatedPath={newFileCreatedPath}
-        setNewFileCreatedPath={setNewFileCreatedPath}
-        isDarkMode={isDarkMode}
-      />
-    </div>
+    <DndProvider backend={HTML5Backend}>
+      <div className="h-full overflow-auto">
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="p-2"
+        >
+          <FileTreeNode
+            fileName={docName}  // Using docName for display
+            nodes={tree?.tree?.[pId]}  // Using pId for data structure
+            onSelect={handleFileSelect}
+            path=""
+            searchSelectedPath={searchSelectedPath}
+            setSearchResult={setSearchResult}
+            searchResult={searchResult}
+            pId={pId}
+            docName={docName}
+            isDarkMode={isDarkMode}
+            newFolderCreatedPath={newFolderCreatedPath}
+            setNewFolderCreatedPath={setNewFolderCreatedPath}
+            newFileCreatedPath={newFileCreatedPath}
+            setNewFileCreatedPath={setNewFileCreatedPath}
+          />
+        </motion.div>
+      </div>
+    </DndProvider>
   );
 };
 
